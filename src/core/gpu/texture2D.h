@@ -44,7 +44,7 @@ class Texture2D
     void SetTextureParameters();
     void Init2DTexture(unsigned int width, unsigned int height, unsigned int channels);
 
- private:
+ protected:
     bool cacheInMemory;
     unsigned int bitsPerPixel;
     unsigned int width;

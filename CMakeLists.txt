@@ -42,10 +42,10 @@ endif()
 
 
 # Set options
-option(WITH_LAB_M1 "With module 1 labs" ON)
-option(WITH_LAB_M2 "With module 2 labs" OFF)
-option(WITH_LAB_EXTRA "With extra labs" OFF)
-option(USE_DEV_COMPONENTS "Use dev components" OFF)
+# option(WITH_LAB_M1 "With module 1 labs" ON)
+# option(WITH_LAB_M2 "With module 2 labs" OFF)
+# option(WITH_LAB_EXTRA "With extra labs" OFF)
+# option(USE_DEV_COMPONENTS "Use dev components" OFF)
 
 
 # Set RPATH to avoid using LD_LIBRARY_PATH
@@ -71,7 +71,6 @@ if (WITH_LAB_EXTRA)
     set(SUFFIX_LAB_EXTRA "extra")
 endif()
 
-
 # Gather the source files
 file(GLOB_RECURSE GFXF_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/components/*.c*
@@ -79,10 +78,11 @@ file(GLOB_RECURSE GFXF_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/utils/*.c*
     #
     ${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/lab/*.c*
     #
-    ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M1}/*.c*
-    ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M2}/*.c*
-    ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_EXTRA}/*.c*
+    # ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M1}/*.c*
+    # ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M2}/*.c*
+    # ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_EXTRA}/*.c*
 )
 
 
@@ -94,13 +94,15 @@ file(GLOB_RECURSE GFXF_HEADERS_PRIVATE
     #
     ${CMAKE_CURRENT_LIST_DIR}/res/*.glsl
     #
-    ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M1}/*.h*
-    ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M2}/*.h*
-    ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_EXTRA}/*.h*
+    ${CMAKE_CURRENT_LIST_DIR}/src/lab/*.h*
+    # ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M1}/*.h*
+    # ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M2}/*.h*
+    # ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_EXTRA}/*.h*
     #
-    ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M1}/*.glsl
-    ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M2}/*.glsl
-    ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_EXTRA}/*.glsl
+    ${CMAKE_CURRENT_LIST_DIR}/src/lab/*.glsl
+    # ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M1}/*.glsl
+    # ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M2}/*.glsl
+    # ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_EXTRA}/*.glsl
 )
 
 

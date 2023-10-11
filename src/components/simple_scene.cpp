@@ -105,6 +105,15 @@ void SimpleScene::InitResources()
         shaders[shader->GetName()] = shader;
     }
 
+    // Create a shader program for drawing vertex colors
+    {
+        Shader* shader = new Shader("Screen");
+        shader->AddShader(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::SHADERS, "Screen.VS.glsl"), GL_VERTEX_SHADER);
+        shader->AddShader(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::SHADERS, "Screen.FS.glsl"), GL_FRAGMENT_SHADER);
+        shader->CreateAndLink();
+        shaders[shader->GetName()] = shader;
+    }
+
     // Default rendering mode will use depth buffer
     glDepthMask(GL_TRUE);
     glEnable(GL_DEPTH_TEST);
