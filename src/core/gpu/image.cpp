@@ -4,8 +4,8 @@
 
 using namespace gfxc;
 
-void Image::Init (unsigned int width,
-    unsigned int height, unsigned int channels)
+void Image::Init (unsigned int width, unsigned int height,
+    unsigned int channels, const glm::vec3 initial_value)
 {
     if (channels > 3) {
         printf ("Eroare!!!");
@@ -18,7 +18,8 @@ void Image::Init (unsigned int width,
     unsigned int size = width * height * channels;
 
     imageData = new unsigned char[size];
-    std::memset(imageData, 0, size);
+
+    Clear(initial_value);
 
     Create(imageData, width, height, channels);
 
@@ -53,4 +54,13 @@ glm::vec3 Image::Get(unsigned int row, unsigned int column)
     }
 
     return data;
+}
+
+void Image::Clear(const glm::vec3 &color)
+{
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            Set(i, j, color);
+        }
+    }
 }
