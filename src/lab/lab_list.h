@@ -5,3 +5,4 @@
 #include "lab/lab3/lab3.h"
 #include "lab/lab4/lab4.h"
 #include "lab/lab5/lab5.h"
+#include "lab/lab6/lab6.h"
