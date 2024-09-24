@@ -1,9 +1,6 @@
 #include "lab/lab03/lab03.h"
 
 #include <vector>
-#include <iostream>
-
-#include "components/transform.h"
 
 using namespace std;
 using namespace lab;
@@ -19,162 +16,164 @@ Lab03::~Lab03()
 
 void Lab03::Initialize()
 {
-    Camera *camera = GetSceneCamera();
-    camera->SetPositionAndRotation(glm::vec3(0, 1, 0), glm::quatLookAt(glm::vec3 (0, 0, -1), glm::vec3 (0, 1, 0)));
-    camera->Update();
-    camera_position = camera->m_transform->GetWorldPosition();
-    camera_forward = camera->m_transform->GetLocalOZVector();
-    camera_right = camera->m_transform->GetLocalOXVector();
-    camera_up = camera->m_transform->GetLocalOYVector();
-
-    cull_face_option = CULL_FACE_OPTION::NO_FACES;
-
-    viewport_space = { 0, 0, 1280, 720 };
-
     image->Init(1280, 720, 3 /* channels */);
     depthImage->Init(1280, 720);
 
-    DrawCube();
+    logic_space = { 0, 0, 16.0f, 9.0f };
+    viewport_space = { 0, 0, 1280, 720 };
+
+    // TODO(student): Divide the screen into 4 quadrants and
+    // draw the geometric shapes 4 times, once in each quadrant
+
+    DrawShapes();
 }
 
-void Lab03::DrawCube()
+void Lab03::DrawShapes()
 {
     vector<VertexFormat> vertices
     {
-        VertexFormat(glm::vec3(-0.5, -0.5, 0.5), glm::vec3(1, 0, 0)),
-        VertexFormat(glm::vec3(0.5, -0.5, 0.5), glm::vec3(0, 1, 0)),
-        VertexFormat(glm::vec3(-0.5, 0.5, 0.5), glm::vec3(0, 0, 1)),
-        VertexFormat(glm::vec3(0.5, 0.5, 0.5), glm::vec3(0, 1, 1)),
-        VertexFormat(glm::vec3(-0.5, -0.5, -0.5), glm::vec3(1, 1, 0)),
-        VertexFormat(glm::vec3(0.5, -0.5, -0.5), glm::vec3(1, 0, 1)),
-        VertexFormat(glm::vec3(-0.5, 0.5, -0.5), glm::vec3(1, 1, 1)),
-        VertexFormat(glm::vec3(0.5, 0.5, -0.5), glm::vec3(0, 0, 0)),
+        VertexFormat(glm::vec3(0, 0,  0.5), glm::vec3(1, 0, 0)),
+        VertexFormat(glm::vec3(0, 1,  0.5), glm::vec3(0, 1, 0)),
+        VertexFormat(glm::vec3(1, 0,  0.5), glm::vec3(0, 0, 1)),
+        VertexFormat(glm::vec3(1, 1,  0.5), glm::vec3(0, 1, 1)),
     };
 
     vector<unsigned int> indices
     {
         0, 1, 2,    // indices for first triangle
-        1, 3, 2,    // indices for second triangle
-        2, 3, 7,
-        2, 7, 6,
-        1, 7, 3,
-        1, 5, 7,
-        6, 7, 4,
-        7, 5, 4,
-        0, 4, 1,
-        1, 4, 5,
-        2, 6, 4,
-        0, 2, 4
+        1, 2, 3,    // indices for second triangle
     };
 
+    glm::mat3 viewPortTransformation = transform2D::Viewport(logic_space, viewport_space);
+
     {
-        glm::mat4 transformation = glm::mat3(1.0f);
-        transformation *= transform3D::Perspective(glm::radians(60.0f), 16.0f/9, 0.1f, 100.0f);
-        transformation *= transform3D::View(camera_position, camera_forward, camera_right, camera_up);
-        transformation *= ModelTransformation();
+        glm::mat3 transformation = glm::mat3(1.0f);
+        transformation *= viewPortTransformation;
+        transformation *= transform2D::Translate(1, 6);
 
-        Rasterize(vertices, indices, transformation, viewport_space, cull_face_option);
+        Rasterize(vertices, indices, transformation);
     }
-}
 
-glm::mat4 Lab03::ModelTransformation()
-{
-    glm::mat4 transformation = glm::mat4(1);
+    // TODO(student): Apply a uniform scaling transformation,
+    // which halves the scale of the square. Apply the
+    // transformation from the bottom-left corner of the square
+    {
+        glm::mat3 transformation = glm::mat4(1.0f);
+        transformation *= viewPortTransformation;
+        transformation *= transform2D::Translate(4, 6);
 
-    transformation *= transform3D::Translate(0, 1, -3);
-    transformation *= transform3D::RotateOZ(glm::radians(45.0f));
-    transformation *= transform3D::RotateOY(glm::radians(45.0f));
-    transformation *= transform3D::RotateOX(glm::radians(45.0f));
-    transformation *= transform3D::Scale(1.25f, 1.25f, 1.25f);
+        Rasterize(vertices, indices, transformation);
+    }
 
-    return transformation;
+    // TODO(student): Apply a uniform scaling transformation,
+    // which doubles the scale of the square. Apply the
+    // transformation from the bottom-left corner of the square
+    {
+        glm::mat3 transformation = glm::mat4(1.0f);
+        transformation *= viewPortTransformation;
+        transformation *= transform2D::Translate(7, 6);
+
+        Rasterize(vertices, indices, transformation);
+    }
+
+    // TODO(student): Apply a 45 degree rotation transformation
+    // to the lower-left corner of the square
+    {
+        glm::mat3 transformation = glm::mat4(1.0f);
+        transformation *= viewPortTransformation;
+        transformation *= transform2D::Translate(10, 6);
+
+        Rasterize(vertices, indices, transformation);
+    }
+
+    // TODO(student): Apply two transformations together, one
+    // of non-uniform scaling with the scaling vector (1, 2)
+    // and a rotation transformation of 45 degrees. Apply both
+    // transformations to the lower left corner of the square.
+    {
+        glm::mat3 transformation = glm::mat4(1.0f);
+        transformation *= viewPortTransformation;
+        transformation *= transform2D::Translate(13, 6);
+
+        Rasterize(vertices, indices, transformation);
+    }
+
+    {
+        glm::mat3 transformation = glm::mat3(1.0f);
+        transformation *= viewPortTransformation;
+        transformation *= transform2D::Translate(1, 2);
+
+        Rasterize(vertices, indices, transformation);
+    }
+
+    // TODO(student): Apply a uniform scaling transformation,
+    // which halves the scale of the square. Apply the
+    // transformation from the center of the square
+    {
+        glm::mat3 transformation = glm::mat4(1.0f);
+        transformation *= viewPortTransformation;
+        transformation *= transform2D::Translate(4, 2);
+
+        Rasterize(vertices, indices, transformation);
+    }
+
+    // TODO(student): Apply a uniform scaling transformation,
+    // which doubles the scale of the square. Apply the
+    // transformation from the center of the square
+    {
+        glm::mat3 transformation = glm::mat4(1.0f);
+        transformation *= viewPortTransformation;
+        transformation *= transform2D::Translate(7, 2);
+
+        Rasterize(vertices, indices, transformation);
+    }
+
+    // TODO(student): Apply a 45 degree rotation transformation
+    // to the center of the square
+    {
+        glm::mat3 transformation = glm::mat4(1.0f);
+        transformation *= viewPortTransformation;
+        transformation *= transform2D::Translate(10, 2);
+
+        Rasterize(vertices, indices, transformation);
+    }
+
+    // TODO(student): Apply two transformations together, one
+    // of non-uniform scaling with the scaling vector (1, 2)
+    // and a rotation transformation of 45 degrees. Apply both
+    // transformations to the center of the square
+    {
+        glm::mat3 transformation = glm::mat4(1.0f);
+        transformation *= viewPortTransformation;
+        transformation *= transform2D::Translate(13, 2);
+
+        Rasterize(vertices, indices, transformation);
+    }
 }
 
 void Lab03::Rasterize(
     const vector<VertexFormat> &vertices,
     const vector<unsigned int> &indices,
-    const glm::mat4 &transformation,
-    const transform2D::ViewportSpace &viewport_space,
-    CULL_FACE_OPTION cull_face_option)
+    const glm::mat3 transformation)
 {
-    if (cull_face_option == CULL_FACE_OPTION::BOTH_FACES) {
-        return;
-    }
-
     for (int i = 0; i < indices.size(); i += 3) {
         auto v1 = vertices[indices[i]];
         auto v2 = vertices[indices[i+1]];
         auto v3 = vertices[indices[i+2]];
 
-        glm::vec3 clip_space_position1 = ComputeClipSpacePosition(v1.position, transformation);
-        glm::vec3 clip_space_position2 = ComputeClipSpacePosition(v2.position, transformation);
-        glm::vec3 clip_space_position3 = ComputeClipSpacePosition(v3.position, transformation);
-
-        auto triangle_face = DetermineTriangleFace(clip_space_position1, clip_space_position2, clip_space_position3);
-
-        if (triangle_face == cull_face_option) {
-            continue;
-        }
-
-        v1.position = ComputeScreenSpacePosition(clip_space_position1, viewport_space);
-        v2.position = ComputeScreenSpacePosition(clip_space_position2, viewport_space);
-        v3.position = ComputeScreenSpacePosition(clip_space_position3, viewport_space);
+        glm::vec3 pos1 = transformation * glm::vec3(v1.position.x, v1.position.y, 1);
+        v1.position = glm::vec3(pos1.x, pos1.y, v1.position.z);
+        
+        glm::vec3 pos2 = transformation * glm::vec3(v2.position.x, v2.position.y, 1);
+        v2.position = glm::vec3(pos2.x, pos2.y, v2.position.z);
+        
+        glm::vec3 pos3 = transformation * glm::vec3(v3.position.x, v3.position.y, 1);
+        v3.position = glm::vec3(pos3.x, pos3.y, v3.position.z);
 
         TriangleRasterizer::Rasterize(
             v1, v2, v3, image, depthImage
         );
     }
-}
-
-glm::vec3 Lab03::ComputeClipSpacePosition(
-    const glm::vec3& position,
-    const glm::mat4& transformation)
-{
-    glm::vec4 homogenous_coordinate = transformation * 
-        glm::vec4(position.x, position.y, position.z, 1);
-
-    // TODO(student): Apply the perspective division on the
-    // homogeneous coordinate
-
-    glm::vec3 clip_space_pos = glm::vec3(homogenous_coordinate);
-
-    return clip_space_pos;
-}
-
-glm::vec3 Lab03::ComputeScreenSpacePosition(
-    const glm::vec3& clip_space_position,
-    const transform2D::ViewportSpace& viewport_space)
-{
-    transform2D::LogicSpace logic_space = { -1, -1, 2, 2 };
-
-    glm::mat3 viewport_transformation =
-        transform2D::Viewport(logic_space, viewport_space);
-
-    glm::vec3 screen_space_position = viewport_transformation *
-        glm::vec3(clip_space_position.x, clip_space_position.y, 1);
-    screen_space_position.z = clip_space_position.z * 0.5 + 0.5;
-
-    return screen_space_position;
-}
-
-TRIANGLE_FACE Lab03::DetermineTriangleFace(
-    const glm::vec2& v1,
-    const glm::vec2& v2,
-    const glm::vec2& v3)
-{
-    glm::vec3 v13D = glm::vec3(v1.x, v1.y, 0);
-    glm::vec3 v23D = glm::vec3(v2.x, v2.y, 0);
-    glm::vec3 v33D = glm::vec3(v3.x, v3.y, 0);
-
-    glm::vec3 cross_produt = glm::cross(v23D - v13D, v33D - v13D);
-
-    // TODO(student): Determine and return which face of the 
-    // triangle is displayed. Use the sign of the z component
-    // of the cross product as follows:
-    // If the sign is positive, the front face of the triangle is displayed.
-    // If the sign is negative, the back face of the triangle is displayed.
-
-    return TRIANGLE_FACE::NONE;
 }
 
 void Lab03::OnInputUpdate(float deltaTime, int mods)
@@ -183,48 +182,33 @@ void Lab03::OnInputUpdate(float deltaTime, int mods)
 
     bool need_refresh = false;
 
-    {
-        auto camera = GetSceneCamera();
-        auto cam_position = camera->m_transform->GetWorldPosition();
-        auto cam_forward = camera->m_transform->GetLocalOZVector();
-        auto cam_right = camera->m_transform->GetLocalOXVector();
-        auto cam_up = camera->m_transform->GetLocalOYVector();
+    if (window->KeyHold(GLFW_KEY_UP)) {
+        logic_space.y += 9 * deltaTime;
+        need_refresh = true;
+    }
 
-        if (cam_position != camera_position ||
-            cam_forward != camera_forward ||
-            cam_right != camera_right ||
-            cam_up != camera_up) {
+    if (window->KeyHold(GLFW_KEY_DOWN)) {
+        logic_space.y -= 9 * deltaTime;
+        need_refresh = true;
+    }
 
-            camera_position = cam_position;
-            camera_forward = cam_forward;
-            camera_right = cam_right;
-            camera_up = cam_up;
+    if (window->KeyHold(GLFW_KEY_RIGHT)) {
+        logic_space.x += 16 * deltaTime;
+        need_refresh = true;
+    }
 
-            need_refresh = true;
-        }
+    if (window->KeyHold(GLFW_KEY_LEFT)) {
+        logic_space.x -= 16 * deltaTime;
+        need_refresh = true;
     }
 
     if (need_refresh) {
         image->Clear(glm::vec3(0));
         depthImage->Clear();
 
-        DrawCube();
+        DrawShapes();
 
         image->UpdateInternalData();
-    }
-}
-
-void Lab03::OnKeyPress(int key, int mods)
-{
-    if (key == GLFW_KEY_F) {
-        cull_face_option = (CULL_FACE_OPTION) 
-            ((cull_face_option + 1) % CULL_FACE_OPTION::COUNT);
-
-        image->Clear(glm::vec3(0));
-        depthImage->Clear();
-
-        DrawCube();
-
-        image->UpdateInternalData();
+        depthImage->UpdateInternalData();
     }
 }

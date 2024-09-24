@@ -1,8 +1,11 @@
 #pragma once
 
-#include "components/simple_scene.h"
-#include "components/transform.h"
+#include <vector>
 
+#include "components/simple_scene.h"
+
+#include "lab/lab03/transform2D.h"
+#include "lab/lab05/transform3D.h"
 
 namespace lab
 {
@@ -14,12 +17,17 @@ namespace lab
 
         void Init() override;
 
+        Mesh *CreateMesh(const char *name, const std::vector<VertexFormat> &vertices, const std::vector<unsigned int> &indices);
+
      private:
+        void CreateShader(const char *name, const char *vertex_shader_path, const char *fragment_shader_path);
+
         void FrameStart() override;
         void Update(float deltaTimeSeconds) override;
         void FrameEnd() override;
 
-        void RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelMatrix, const glm::vec3 &color = glm::vec3(1));
+        void RenderMesh(Mesh *mesh, Shader *shader, const glm::mat4 &model,
+            const gfxc::Camera *camera, const transform2D::ViewportSpace &viewport_space);
 
         void OnInputUpdate(float deltaTime, int mods) override;
         void OnKeyPress(int key, int mods) override;
@@ -30,15 +38,11 @@ namespace lab
         void OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY) override;
         void OnWindowResize(int width, int height) override;
 
-        glm::vec3 point_light_positions[10];
-        glm::vec3 spot_light_positions[10];
-        glm::vec3 spot_light_directions[10];
-        glm::vec3 point_light_colors[10];
-        glm::vec3 spot_light_colors[10];
-        float spot_light_angles[10];
+        const char *GetShaderContent(const char *shader_file_path);
+        void CheckShaderCompilationError(unsigned int shader_id);
+        void CheckShadersLinkingError(unsigned int program_id);
 
-        int controlled_light_source_index;
-        glm::vec3 controlled_light_position;
-        float angle;
+     protected:
+        transform2D::ViewportSpace viewport_space;
     };
-}   // namespace lab
+}   // namespace m1

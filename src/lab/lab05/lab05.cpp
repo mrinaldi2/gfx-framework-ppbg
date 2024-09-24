@@ -1,10 +1,13 @@
 #include "lab/lab05/lab05.h"
 
 #include <vector>
-#include <string>
 #include <iostream>
 
 #include "components/transform.h"
+#include "core/engine.h"
+#include "utils/gl_utils.h"
+
+#include "lab/lab05/transform3D.h"
 
 using namespace std;
 using namespace lab;
@@ -28,11 +31,11 @@ Lab05::~Lab05()
 
 void Lab05::Init()
 {
-    {
-        Mesh* mesh = new Mesh("sphere");
-        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "sphere.obj");
-        meshes[mesh->GetMeshID()] = mesh;
-    }
+    color = glm::vec3(0);
+
+    viewport_space = {0, 0, 1280, 720};
+
+    cullFace = GL_BACK;
 
     // Create a mesh box using custom data
     {
@@ -64,81 +67,33 @@ void Lab05::Init()
             0, 2, 4
         };
 
+        // Create the mesh from the data
         CreateMesh("cube", vertices, indices);
     }
-
-    CreateShader("LabShader",
-        "src/lab/lab05/shaders/LabShader.VS.glsl",
-        "src/lab/lab05/shaders/LabShader.FS.glsl"
-    );
-
-    CreateShader("LastTask",
-        "src/lab/lab05/shaders/LastTask.VS.glsl",
-        "src/lab/lab05/shaders/LastTask.FS.glsl"
-    );
 }
 
-void Lab05::CreateShader(const char* name, const char* vertex_shader_path, const char* fragment_shader_path)
-{
-    unsigned int vertex_shader_id = 0;
-    // TODO(student): Create and compile the vertex shader object
 
-    const char *vertex_shader_source = GetShaderContent(vertex_shader_path);
-
-
-    CheckShaderCompilationError(vertex_shader_id);
-
-    unsigned int fragment_shader_id = 0;
-    // TODO(student): Create and compile the fragment shader object
-
-    const char *fragment_shader_source = GetShaderContent(fragment_shader_path);
-
-
-    CheckShaderCompilationError(fragment_shader_id);
-
-    unsigned int program_id = 0;
-    // TODO(student): Create the program, attach the two shader
-    // objects and link them.
-
-
-    CheckShadersLinkingError(program_id);
-
-    shaders[name] = new Shader(name);
-    shaders[name]->program = program_id;
-}
-
-Mesh* Lab05::CreateMesh(const char *name, const std::vector<VertexFormat> &vertices, const std::vector<unsigned int> &indices)
+void Lab05::CreateMesh(const char *name, const std::vector<VertexFormat> &vertices, const std::vector<unsigned int> &indices)
 {
     unsigned int VAO = 0;
-    // Create the VAO and bind it
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
+    // TODO(student): Create the VAO and bind it
 
-    // Create the VBO and bind it
-    unsigned int VBO;
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    unsigned int VBO = 0;
+    // TODO(student): Create the VBO and bind it
 
-    // Send vertices data into the VBO buffer
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+    // TODO(student): Send vertices data into the VBO buffer
 
-    // Create the IBO and bind it
-    unsigned int IBO;
-    glGenBuffers(1, &IBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+    unsigned int IBO = 0;
+    // TODO(student): Create the IBO and bind it
 
-    // Send indices data into the IBO buffer
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * indices.size(), &indices[0], GL_STATIC_DRAW);
+    // TODO(student): Send indices data into the IBO buffer
 
     // ========================================================================
     // This section demonstrates how the GPU vertex shader program
-    // receives data.
-
-    // To get an idea about how they're different from one another, do the
-    // following experiments. What happens if you switch the color pipe and
-    // normal pipe in this function (but not in the shader)? Now, what happens
-    // if you do the same thing in the shader (but not in this function)?
-    // Finally, what happens if you do the same thing in both places? Why?
+    // receives data. It will be learned later, when GLSL shaders will be
+    // introduced. For the moment, just think that each property value from
+    // our vertex format needs to be sent to a certain channel, in order to
+    // know how to receive it in the GLSL vertex shader.
 
     // Set vertex position attribute
     glEnableVertexAttribArray(0);
@@ -157,26 +112,24 @@ Mesh* Lab05::CreateMesh(const char *name, const std::vector<VertexFormat> &verti
     glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexFormat), (void*)(2 * sizeof(glm::vec3) + sizeof(glm::vec2)));
     // ========================================================================
 
-    // Unbind the VAO
-    glBindVertexArray(0);
+    // TODO(student): Unbind the VAO
 
     // Check for OpenGL errors
-    CheckOpenGLError();
+    if (GetOpenGLError() == GL_INVALID_OPERATION)
+    {
+        cout << "\t[NOTE] : For students : DON'T PANIC! This error should go away when completing the tasks." << std::endl;
+        cout << "\t[NOTE] : For developers : This happens because OpenGL core spec >=3.1 forbids null VAOs." << std::endl;
+    }
 
     // Mesh information is saved into a Mesh object
     meshes[name] = new Mesh(name);
     meshes[name]->InitFromBuffer(VAO, static_cast<unsigned int>(indices.size()));
-    meshes[name]->vertices = vertices;
-    meshes[name]->indices = indices;
-    return meshes[name];
 }
 
 
 void Lab05::FrameStart()
 {
-    // Clears the color buffer (using the previously set color) and depth buffer
-    glClearColor(0, 0, 0, 1);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 }
 
 
@@ -184,56 +137,34 @@ void Lab05::Update(float deltaTimeSeconds)
 {
     glm::ivec2 resolution = window->GetResolution();
 
+    // TODO(student): Set the screen cleaning color. Use the 'color' attribute.
+
+    // Clears the color buffer (using the previously set color) and depth buffer
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    static auto camera = new gfxc::Camera();
+
+    // TODO(student): Draw the objects 4 times in different viewports.
+    // Send the 4 cameras with predefined viewing positions and directions to the drawing.
+
     viewport_space = transform2D::ViewportSpace(0, 0, resolution.x, resolution.y);
+    DrawObjects(GetSceneCamera(), viewport_space);
 
-    glViewport(0, 0, viewport_space.width, viewport_space.height);
+    camera->SetPositionAndRotation(glm::vec3(0, 3, -3), glm::quatLookAt(glm::normalize(glm::vec3(0, -3, 3)), glm::vec3(0, 1, 0)));
 
-    {
-        glm::mat4 model = glm::mat4(1);
-        model *= transform3D::Translate(glm::vec3(-2, 0.5f, 0));
-        model *= transform3D::RotateOX(glm::radians(60.0f));
-        model *= transform3D::RotateOY(glm::radians(60.0f));
-        RenderMesh(meshes["sphere"], shaders["LabShader"], model, GetSceneCamera(), viewport_space);
-    }
+    camera->SetPositionAndRotation(glm::vec3(3, 3, 3), glm::quatLookAt(glm::normalize(glm::vec3(-3, -3, -3)), glm::vec3(0, 1, 0)));
 
-    {
-        glm::mat4 model = glm::mat4(1);
-        model *= transform3D::Translate(glm::vec3(0, 1, 0));
-        model *= transform3D::RotateOY(glm::radians(45.0f));
-        RenderMesh(meshes["cube"], shaders["LabShader"], model, GetSceneCamera(), viewport_space);
-    }
-
-    {
-        glm::mat4 model = glm::mat4(1);
-        model *= transform3D::Translate(glm::vec3(2, 0.5f, 0));
-        model *= transform3D::RotateOX(glm::radians(60.0f));
-        RenderMesh(meshes["cube"], shaders["LabShader"], model, GetSceneCamera(), viewport_space);
-    }
+    camera->SetPositionAndRotation(glm::vec3(-3, 3, 3), glm::quatLookAt(glm::normalize(glm::vec3(3, -3, -3)), glm::vec3(0, 1, 0)));
 }
 
 
 void Lab05::FrameEnd()
 {
-    DrawCoordinateSystem();
+
 }
 
-
-void Lab05::RenderMesh(Mesh *mesh, Shader *shader, const glm::mat4 & model,
-    const gfxc::Camera *camera, const transform2D::ViewportSpace &viewport_space)
+void Lab05::DrawObjects(gfxc::Camera *camera, const transform2D::ViewportSpace & viewport_space)
 {
-    if (!mesh || !shader || !shader->GetProgramID())
-        return;
-
-    // Render an object using the specified shader and the specified position
-    glUseProgram(shader->program);
-
-    // TODO(student): Get shader location for uniform mat4 "Model"
-
-    // TODO(student): Set shader uniform "Model" to modelMatrix
-
-    // TODO(student): Get shader location for uniform mat4 "View"
-
-    // TODO(student): Set shader uniform "View" to viewMatrix
     glm::mat4 view = transform3D::View(
         camera->m_transform->GetWorldPosition(),
         camera->m_transform->GetLocalOZVector(),
@@ -241,91 +172,56 @@ void Lab05::RenderMesh(Mesh *mesh, Shader *shader, const glm::mat4 & model,
         camera->m_transform->GetLocalOYVector()
     );
 
-    // TODO(student): Get shader location for uniform mat4 "Projection"
-
-    // TODO(student): Set shader uniform "Projection" to projectionMatrix
     glm::mat4 projection = transform3D::Perspective(
         glm::radians(60.0f), (float)viewport_space.width / viewport_space.height, 0.1f, 100.0f
     );
 
-    // TODO(student): Send the application time, obtained by
-    // calling Engine::GetElapsedTime(), in the form of a
-    // uniform type attribute to the shader
+    // TODO(student): Enable face culling
 
-    // Draw the object
-    glBindVertexArray(mesh->GetBuffers()->m_VAO);
-    glDrawElements(mesh->GetDrawMode(), static_cast<int>(mesh->indices.size()), GL_UNSIGNED_INT, 0);
+    // TODO(student): Set face custom culling. Use the `cullFace` variable.
+
+    // TODO(student): Set the position and size of the view port based on the
+    // information received from the 'viewport_space' parameter.
+
+    glm::mat4 model = glm::mat4(1);
+    model *= transform3D::Translate(glm::vec3(-1.5f, 0.5f, 0));
+    model *= transform3D::RotateOX(glm::radians(45.0f));
+    model *= transform3D::RotateOZ(glm::radians(-45.0f));
+    model *= transform3D::Scale(glm::vec3(0.75f));
+    RenderMesh(meshes["cube"], shaders["VertexColor"], model, view, projection);
+
+    model = glm::mat4(1);
+    model *= transform3D::Translate(glm::vec3(0, 0.5f, 0));
+    model *= transform3D::Scale(glm::vec3(0.75f));
+    RenderMesh(meshes["cube"], shaders["VertexColor"], model, view, projection);
+
+    model = glm::mat4(1);
+    model *= transform3D::Translate(glm::vec3(1.5f, 0.5f, 0));
+    model *= transform3D::RotateOX(glm::radians(45.0f));
+    model *= transform3D::RotateOZ(glm::radians(45.0f));
+    model *= transform3D::Scale(glm::vec3(0.5f));
+    RenderMesh(meshes["cube"], shaders["VertexColor"], model, view, projection);
+
+    // TODO(student): Disable face culling
+
+    DrawCoordinateSystem(view, projection);
 }
 
-const char *Lab05::GetShaderContent(const char* shader_file_path)
+void Lab05::RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 & modelMatrix,
+    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix)
 {
-    FILE* fp;
-    long lSize;
-    char* buffer;
+    if (!mesh || !shader || !shader->program)
+        return;
 
-    fp = fopen(shader_file_path, "rb");
-    if (!fp) perror(shader_file_path), exit(1);
+    // Render an object using the specified shader and the specified position
+    shader->Use();
+    glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+    glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+    glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
-    fseek(fp, 0L, SEEK_END);
-    lSize = ftell(fp);
-    rewind(fp);
-
-    /* allocate memory for entire content */
-    buffer = (char*)calloc(1, lSize + 1);
-    if (!buffer) fclose(fp), fputs("memory alloc fails", stderr), exit(1);
-
-    /* copy the file into the buffer */
-    if (1 != fread(buffer, lSize, 1, fp))
-        fclose(fp), free(buffer), fputs("entire read fails", stderr), exit(1);
-
-    fclose(fp);
-
-    return buffer;
+    mesh->Render();
 }
 
-void Lab05::CheckShaderCompilationError(unsigned int shader_id)
-{
-    GLint isCompiled = 0;
-    glGetShaderiv(shader_id, GL_COMPILE_STATUS, &isCompiled);
-    if (isCompiled == GL_FALSE)
-    {
-        GLint maxLength = 0;
-        glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &maxLength);
-
-        // The maxLength includes the NULL character
-        std::vector<GLchar> infoLog(maxLength);
-        glGetShaderInfoLog(shader_id, maxLength, &maxLength, &infoLog[0]);
-
-        for (auto c : infoLog) {
-            printf("%c", c);
-        }
-
-        // We don't need the shader anymore.
-        glDeleteShader(shader_id);
-    }
-}
-
-void Lab05::CheckShadersLinkingError(unsigned int program_id)
-{
-    GLint isLinked = 0;
-    glGetProgramiv(program_id, GL_LINK_STATUS, (int*)&isLinked);
-    if (isLinked == GL_FALSE)
-    {
-        GLint maxLength = 0;
-        glGetProgramiv(program_id, GL_INFO_LOG_LENGTH, &maxLength);
-
-        // The maxLength includes the NULL character
-        std::vector<GLchar> infoLog(maxLength);
-        glGetProgramInfoLog(program_id, maxLength, &maxLength, &infoLog[0]);
-
-        for (auto c : infoLog) {
-            printf("%c", c);
-        }
-
-        // We don't need the program anymore.
-        glDeleteProgram(program_id);
-    }
-}
 
 /*
  *  These are callback functions. To find more about callbacks and
@@ -335,13 +231,39 @@ void Lab05::CheckShadersLinkingError(unsigned int program_id)
 
 void Lab05::OnInputUpdate(float deltaTime, int mods)
 {
-    // Add key press event
+    // TODO(student): Add some key hold events that will let you move
+    // a mesh instance on all three axes. You will also need to
+    // generalize the position used by `RenderMesh`.
+    //
+    // Use the 'window->KeyHold()' and 'window->MouseHold()' methods
+    // to check if a certain key or mouse button is pressed.
+    //
+    // Use the 'deltaTime' parameter to make a movement independent
+    // of the number of frames rendered per second. More precisely,
+    // when we want to move an object at a speed of 5 units per second,
+    // we have:
+    //     5 units ... 1 second
+    //     x units ... deltaTime seconds
+    //
+    // Use this association to calculate the number of units of
+    // movement at the current frame for a given speed per second.
+    //
+    // Don't change the position of the object when the position
+    // of the camera in the scene changes.
+
 }
 
 
 void Lab05::OnKeyPress(int key, int mods)
 {
-    // Add key press event
+    if (key == GLFW_KEY_R) {
+        // TODO(student): Change the values of the color components.
+
+    }
+
+    // TODO(student): Switch between GL_FRONT and GL_BACK culling.
+    // Save the state in `cullFace` variable and apply it in the
+    // `Update()` method, NOT here!
 }
 
 

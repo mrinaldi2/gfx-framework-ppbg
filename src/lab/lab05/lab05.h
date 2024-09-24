@@ -4,8 +4,7 @@
 
 #include "components/simple_scene.h"
 
-#include "lab/lab02/transform2D.h"
-#include "lab/lab04/transform3D.h"
+#include "lab/lab03/transform2D.h"
 
 namespace lab
 {
@@ -17,17 +16,13 @@ namespace lab
 
         void Init() override;
 
-        Mesh *CreateMesh(const char *name, const std::vector<VertexFormat> &vertices, const std::vector<unsigned int> &indices);
-
      private:
-        void CreateShader(const char *name, const char *vertex_shader_path, const char *fragment_shader_path);
+        void CreateMesh(const char *name, const std::vector<VertexFormat> &vertices, const std::vector<unsigned int> &indices);
+        void DrawObjects(gfxc::Camera *camera, const transform2D::ViewportSpace &viewport_space);
 
         void FrameStart() override;
         void Update(float deltaTimeSeconds) override;
         void FrameEnd() override;
-
-        void RenderMesh(Mesh *mesh, Shader *shader, const glm::mat4 &model,
-            const gfxc::Camera *camera, const transform2D::ViewportSpace &viewport_space);
 
         void OnInputUpdate(float deltaTime, int mods) override;
         void OnKeyPress(int key, int mods) override;
@@ -38,11 +33,12 @@ namespace lab
         void OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY) override;
         void OnWindowResize(int width, int height) override;
 
-        const char *GetShaderContent(const char *shader_file_path);
-        void CheckShaderCompilationError(unsigned int shader_id);
-        void CheckShadersLinkingError(unsigned int program_id);
+        void RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 & modelMatrix,
+            const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix);
 
      protected:
         transform2D::ViewportSpace viewport_space;
+        glm::vec3 color;
+        GLenum cullFace;
     };
-}   // namespace m1
+}   // namespace lab

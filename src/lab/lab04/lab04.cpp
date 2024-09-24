@@ -4,298 +4,227 @@
 #include <iostream>
 
 #include "components/transform.h"
-#include "core/engine.h"
-#include "utils/gl_utils.h"
-
-#include "lab/lab04/transform3D.h"
 
 using namespace std;
 using namespace lab;
 
-
-/*
- *  To find out more about `FrameStart`, `Update`, `FrameEnd`
- *  and the order in which they are called, see `world.cpp`.
- */
-
-
 Lab04::Lab04()
 {
+    window->SetSize(1280, 720);
 }
-
 
 Lab04::~Lab04()
 {
 }
 
-
-void Lab04::Init()
+void Lab04::Initialize()
 {
-    color = glm::vec3(0);
+    Camera *camera = GetSceneCamera();
+    camera->SetPositionAndRotation(glm::vec3(0, 1, 0), glm::quatLookAt(glm::vec3 (0, 0, -1), glm::vec3 (0, 1, 0)));
+    camera->Update();
+    camera_position = camera->m_transform->GetWorldPosition();
+    camera_forward = camera->m_transform->GetLocalOZVector();
+    camera_right = camera->m_transform->GetLocalOXVector();
+    camera_up = camera->m_transform->GetLocalOYVector();
 
-    viewport_space = {0, 0, 1280, 720};
+    cull_face_option = CULL_FACE_OPTION::NO_FACES;
 
-    cullFace = GL_BACK;
+    viewport_space = { 0, 0, 1280, 720 };
 
-    // Create a mesh box using custom data
+    image->Init(1280, 720, 3 /* channels */);
+    depthImage->Init(1280, 720);
+
+    DrawCube();
+}
+
+void Lab04::DrawCube()
+{
+    vector<VertexFormat> vertices
     {
-        vector<VertexFormat> vertices
-        {
-            VertexFormat(glm::vec3(-0.5, -0.5, 0.5), glm::vec3(1, 0, 0)),
-            VertexFormat(glm::vec3(0.5, -0.5, 0.5), glm::vec3(0, 1, 0)),
-            VertexFormat(glm::vec3(-0.5, 0.5, 0.5), glm::vec3(0, 0, 1)),
-            VertexFormat(glm::vec3(0.5, 0.5, 0.5), glm::vec3(0, 1, 1)),
-            VertexFormat(glm::vec3(-0.5, -0.5, -0.5), glm::vec3(1, 1, 0)),
-            VertexFormat(glm::vec3(0.5, -0.5, -0.5), glm::vec3(1, 0, 1)),
-            VertexFormat(glm::vec3(-0.5, 0.5, -0.5), glm::vec3(1, 1, 1)),
-            VertexFormat(glm::vec3(0.5, 0.5, -0.5), glm::vec3(0, 0, 0)),
-        };
+        VertexFormat(glm::vec3(-0.5, -0.5, 0.5), glm::vec3(1, 0, 0)),
+        VertexFormat(glm::vec3(0.5, -0.5, 0.5), glm::vec3(0, 1, 0)),
+        VertexFormat(glm::vec3(-0.5, 0.5, 0.5), glm::vec3(0, 0, 1)),
+        VertexFormat(glm::vec3(0.5, 0.5, 0.5), glm::vec3(0, 1, 1)),
+        VertexFormat(glm::vec3(-0.5, -0.5, -0.5), glm::vec3(1, 1, 0)),
+        VertexFormat(glm::vec3(0.5, -0.5, -0.5), glm::vec3(1, 0, 1)),
+        VertexFormat(glm::vec3(-0.5, 0.5, -0.5), glm::vec3(1, 1, 1)),
+        VertexFormat(glm::vec3(0.5, 0.5, -0.5), glm::vec3(0, 0, 0)),
+    };
 
-        vector<unsigned int> indices
-        {
-            0, 1, 2,    // indices for first triangle
-            1, 3, 2,    // indices for second triangle
-            2, 3, 7,
-            2, 7, 6,
-            1, 7, 3,
-            1, 5, 7,
-            6, 7, 4,
-            7, 5, 4,
-            0, 4, 1,
-            1, 4, 5,
-            2, 6, 4,
-            0, 2, 4
-        };
+    vector<unsigned int> indices
+    {
+        0, 1, 2,    // indices for first triangle
+        1, 3, 2,    // indices for second triangle
+        2, 3, 7,
+        2, 7, 6,
+        1, 7, 3,
+        1, 5, 7,
+        6, 7, 4,
+        7, 5, 4,
+        0, 4, 1,
+        1, 4, 5,
+        2, 6, 4,
+        0, 2, 4
+    };
 
-        // Create the mesh from the data
-        CreateMesh("cube", vertices, indices);
+    {
+        glm::mat4 transformation = glm::mat3(1.0f);
+        transformation *= transform3D::Perspective(glm::radians(60.0f), 16.0f/9, 0.1f, 100.0f);
+        transformation *= transform3D::View(camera_position, camera_forward, camera_right, camera_up);
+        transformation *= ModelTransformation();
+
+        Rasterize(vertices, indices, transformation, viewport_space, cull_face_option);
     }
 }
 
-
-void Lab04::CreateMesh(const char *name, const std::vector<VertexFormat> &vertices, const std::vector<unsigned int> &indices)
+glm::mat4 Lab04::ModelTransformation()
 {
-    unsigned int VAO = 0;
-    // TODO(student): Create the VAO and bind it
+    glm::mat4 transformation = glm::mat4(1);
 
-    unsigned int VBO = 0;
-    // TODO(student): Create the VBO and bind it
+    transformation *= transform3D::Translate(0, 1, -3);
+    transformation *= transform3D::RotateOZ(glm::radians(45.0f));
+    transformation *= transform3D::RotateOY(glm::radians(45.0f));
+    transformation *= transform3D::RotateOX(glm::radians(45.0f));
+    transformation *= transform3D::Scale(1.25f, 1.25f, 1.25f);
 
-    // TODO(student): Send vertices data into the VBO buffer
-
-    unsigned int IBO = 0;
-    // TODO(student): Create the IBO and bind it
-
-    // TODO(student): Send indices data into the IBO buffer
-
-    // ========================================================================
-    // This section demonstrates how the GPU vertex shader program
-    // receives data. It will be learned later, when GLSL shaders will be
-    // introduced. For the moment, just think that each property value from
-    // our vertex format needs to be sent to a certain channel, in order to
-    // know how to receive it in the GLSL vertex shader.
-
-    // Set vertex position attribute
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexFormat), 0);
-
-    // Set vertex normal attribute
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexFormat), (void*)(sizeof(glm::vec3)));
-
-    // Set texture coordinate attribute
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexFormat), (void*)(2 * sizeof(glm::vec3)));
-
-    // Set vertex color attribute
-    glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexFormat), (void*)(2 * sizeof(glm::vec3) + sizeof(glm::vec2)));
-    // ========================================================================
-
-    // TODO(student): Unbind the VAO
-
-    // Check for OpenGL errors
-    if (GetOpenGLError() == GL_INVALID_OPERATION)
-    {
-        cout << "\t[NOTE] : For students : DON'T PANIC! This error should go away when completing the tasks." << std::endl;
-        cout << "\t[NOTE] : For developers : This happens because OpenGL core spec >=3.1 forbids null VAOs." << std::endl;
-    }
-
-    // Mesh information is saved into a Mesh object
-    meshes[name] = new Mesh(name);
-    meshes[name]->InitFromBuffer(VAO, static_cast<unsigned int>(indices.size()));
+    return transformation;
 }
 
-
-void Lab04::FrameStart()
+void Lab04::Rasterize(
+    const vector<VertexFormat> &vertices,
+    const vector<unsigned int> &indices,
+    const glm::mat4 &transformation,
+    const transform2D::ViewportSpace &viewport_space,
+    CULL_FACE_OPTION cull_face_option)
 {
-
-}
-
-
-void Lab04::Update(float deltaTimeSeconds)
-{
-    glm::ivec2 resolution = window->GetResolution();
-
-    // TODO(student): Set the screen cleaning color. Use the 'color' attribute.
-
-    // Clears the color buffer (using the previously set color) and depth buffer
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    static auto camera = new gfxc::Camera();
-
-    // TODO(student): Draw the objects 4 times in different viewports.
-    // Send the 4 cameras with predefined viewing positions and directions to the drawing.
-
-    viewport_space = transform2D::ViewportSpace(0, 0, resolution.x, resolution.y);
-    DrawObjects(GetSceneCamera(), viewport_space);
-
-    camera->SetPositionAndRotation(glm::vec3(0, 3, -3), glm::quatLookAt(glm::normalize(glm::vec3(0, -3, 3)), glm::vec3(0, 1, 0)));
-
-    camera->SetPositionAndRotation(glm::vec3(3, 3, 3), glm::quatLookAt(glm::normalize(glm::vec3(-3, -3, -3)), glm::vec3(0, 1, 0)));
-
-    camera->SetPositionAndRotation(glm::vec3(-3, 3, 3), glm::quatLookAt(glm::normalize(glm::vec3(3, -3, -3)), glm::vec3(0, 1, 0)));
-}
-
-
-void Lab04::FrameEnd()
-{
-
-}
-
-void Lab04::DrawObjects(gfxc::Camera *camera, const transform2D::ViewportSpace & viewport_space)
-{
-    glm::mat4 view = transform3D::View(
-        camera->m_transform->GetWorldPosition(),
-        camera->m_transform->GetLocalOZVector(),
-        camera->m_transform->GetLocalOXVector(),
-        camera->m_transform->GetLocalOYVector()
-    );
-
-    glm::mat4 projection = transform3D::Perspective(
-        glm::radians(60.0f), (float)viewport_space.width / viewport_space.height, 0.1f, 100.0f
-    );
-
-    // TODO(student): Enable face culling
-
-    // TODO(student): Set face custom culling. Use the `cullFace` variable.
-
-    // TODO(student): Set the position and size of the view port based on the
-    // information received from the 'viewport_space' parameter.
-
-    glm::mat4 model = glm::mat4(1);
-    model *= transform3D::Translate(glm::vec3(-1.5f, 0.5f, 0));
-    model *= transform3D::RotateOX(glm::radians(45.0f));
-    model *= transform3D::RotateOZ(glm::radians(-45.0f));
-    model *= transform3D::Scale(glm::vec3(0.75f));
-    RenderMesh(meshes["cube"], shaders["VertexColor"], model, view, projection);
-
-    model = glm::mat4(1);
-    model *= transform3D::Translate(glm::vec3(0, 0.5f, 0));
-    model *= transform3D::Scale(glm::vec3(0.75f));
-    RenderMesh(meshes["cube"], shaders["VertexColor"], model, view, projection);
-
-    model = glm::mat4(1);
-    model *= transform3D::Translate(glm::vec3(1.5f, 0.5f, 0));
-    model *= transform3D::RotateOX(glm::radians(45.0f));
-    model *= transform3D::RotateOZ(glm::radians(45.0f));
-    model *= transform3D::Scale(glm::vec3(0.5f));
-    RenderMesh(meshes["cube"], shaders["VertexColor"], model, view, projection);
-
-    // TODO(student): Disable face culling
-
-    DrawCoordinateSystem(view, projection);
-}
-
-void Lab04::RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 & modelMatrix,
-    const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix)
-{
-    if (!mesh || !shader || !shader->program)
+    if (cull_face_option == CULL_FACE_OPTION::BOTH_FACES) {
         return;
+    }
 
-    // Render an object using the specified shader and the specified position
-    shader->Use();
-    glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(viewMatrix));
-    glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-    glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+    for (int i = 0; i < indices.size(); i += 3) {
+        auto v1 = vertices[indices[i]];
+        auto v2 = vertices[indices[i+1]];
+        auto v3 = vertices[indices[i+2]];
 
-    mesh->Render();
+        glm::vec3 clip_space_position1 = ComputeClipSpacePosition(v1.position, transformation);
+        glm::vec3 clip_space_position2 = ComputeClipSpacePosition(v2.position, transformation);
+        glm::vec3 clip_space_position3 = ComputeClipSpacePosition(v3.position, transformation);
+
+        auto triangle_face = DetermineTriangleFace(clip_space_position1, clip_space_position2, clip_space_position3);
+
+        if (triangle_face == cull_face_option) {
+            continue;
+        }
+
+        v1.position = ComputeScreenSpacePosition(clip_space_position1, viewport_space);
+        v2.position = ComputeScreenSpacePosition(clip_space_position2, viewport_space);
+        v3.position = ComputeScreenSpacePosition(clip_space_position3, viewport_space);
+
+        TriangleRasterizer::Rasterize(
+            v1, v2, v3, image, depthImage
+        );
+    }
 }
 
+glm::vec3 Lab04::ComputeClipSpacePosition(
+    const glm::vec3 &position,
+    const glm::mat4 &transformation)
+{
+    glm::vec4 homogenous_coordinate = transformation * 
+        glm::vec4(position.x, position.y, position.z, 1);
 
-/*
- *  These are callback functions. To find more about callbacks and
- *  how they behave, see `input_controller.h`.
- */
+    // TODO(student): Apply the perspective division on the
+    // homogeneous coordinate
 
+    glm::vec3 clip_space_pos = glm::vec3(homogenous_coordinate);
+
+    return clip_space_pos;
+}
+
+glm::vec3 Lab04::ComputeScreenSpacePosition(
+    const glm::vec3 &clip_space_position,
+    const transform2D::ViewportSpace &viewport_space)
+{
+    transform2D::LogicSpace logic_space = { -1, -1, 2, 2 };
+
+    glm::mat3 viewport_transformation =
+        transform2D::Viewport(logic_space, viewport_space);
+
+    glm::vec3 screen_space_position = viewport_transformation *
+        glm::vec3(clip_space_position.x, clip_space_position.y, 1);
+    screen_space_position.z = clip_space_position.z * 0.5 + 0.5;
+
+    return screen_space_position;
+}
+
+TRIANGLE_FACE Lab04::DetermineTriangleFace(
+    const glm::vec2 &v1,
+    const glm::vec2 &v2,
+    const glm::vec2 &v3)
+{
+    glm::vec3 v13D = glm::vec3(v1.x, v1.y, 0);
+    glm::vec3 v23D = glm::vec3(v2.x, v2.y, 0);
+    glm::vec3 v33D = glm::vec3(v3.x, v3.y, 0);
+
+    glm::vec3 cross_produt = glm::cross(v23D - v13D, v33D - v13D);
+
+    // TODO(student): Determine and return which face of the 
+    // triangle is displayed. Use the sign of the z component
+    // of the cross product as follows:
+    // If the sign is positive, the front face of the triangle is displayed.
+    // If the sign is negative, the back face of the triangle is displayed.
+
+    return TRIANGLE_FACE::NONE;
+}
 
 void Lab04::OnInputUpdate(float deltaTime, int mods)
 {
-    // TODO(student): Add some key hold events that will let you move
-    // a mesh instance on all three axes. You will also need to
-    // generalize the position used by `RenderMesh`.
-    //
-    // Use the 'window->KeyHold()' and 'window->MouseHold()' methods
-    // to check if a certain key or mouse button is pressed.
-    //
-    // Use the 'deltaTime' parameter to make a movement independent
-    // of the number of frames rendered per second. More precisely,
-    // when we want to move an object at a speed of 5 units per second,
-    // we have:
-    //     5 units ... 1 second
-    //     x units ... deltaTime seconds
-    //
-    // Use this association to calculate the number of units of
-    // movement at the current frame for a given speed per second.
-    //
-    // Don't change the position of the object when the position
-    // of the camera in the scene changes.
+    // Treat continuous update based on input
 
+    bool need_refresh = false;
+
+    {
+        auto camera = GetSceneCamera();
+        auto cam_position = camera->m_transform->GetWorldPosition();
+        auto cam_forward = camera->m_transform->GetLocalOZVector();
+        auto cam_right = camera->m_transform->GetLocalOXVector();
+        auto cam_up = camera->m_transform->GetLocalOYVector();
+
+        if (cam_position != camera_position ||
+            cam_forward != camera_forward ||
+            cam_right != camera_right ||
+            cam_up != camera_up) {
+
+            camera_position = cam_position;
+            camera_forward = cam_forward;
+            camera_right = cam_right;
+            camera_up = cam_up;
+
+            need_refresh = true;
+        }
+    }
+
+    if (need_refresh) {
+        image->Clear(glm::vec3(0));
+        depthImage->Clear();
+
+        DrawCube();
+
+        image->UpdateInternalData();
+    }
 }
-
 
 void Lab04::OnKeyPress(int key, int mods)
 {
-    if (key == GLFW_KEY_R) {
-        // TODO(student): Change the values of the color components.
+    if (key == GLFW_KEY_F) {
+        cull_face_option = (CULL_FACE_OPTION) 
+            ((cull_face_option + 1) % CULL_FACE_OPTION::COUNT);
 
+        image->Clear(glm::vec3(0));
+        depthImage->Clear();
+
+        DrawCube();
+
+        image->UpdateInternalData();
     }
-
-    // TODO(student): Switch between GL_FRONT and GL_BACK culling.
-    // Save the state in `cullFace` variable and apply it in the
-    // `Update()` method, NOT here!
-}
-
-
-void Lab04::OnKeyRelease(int key, int mods)
-{
-    // Add key release event
-}
-
-
-void Lab04::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
-{
-    // Add mouse move event
-}
-
-
-void Lab04::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
-{
-    // Add mouse button press event
-}
-
-
-void Lab04::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
-{
-    // Add mouse button release event
-}
-
-
-void Lab04::OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY)
-{
-}
-
-
-void Lab04::OnWindowResize(int width, int height)
-{
 }

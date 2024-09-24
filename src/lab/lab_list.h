@@ -10,3 +10,6 @@
 #include "lab/lab08/lab08.h"
 #include "lab/lab09/lab09.h"
 #include "lab/lab10/lab10.h"
+
+// Optional
+#include "lab/lab11/lab11.h"

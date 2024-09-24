@@ -1,4 +1,4 @@
-#include "lab/lab01/triangle_rasterizer.h"
+#include "lab/lab02/triangle_rasterizer.h"
 
 #include <vector>
 #include <iostream>

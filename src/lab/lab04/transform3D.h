@@ -2,20 +2,61 @@
 
 #include "utils/glm_utils.h"
 
-#include "lab/lab03/transform3D.h"
 
 namespace transform3D
 {
     // Translation matrix
-    inline glm::mat4 Translate(const glm::vec3 &translation)
+    inline glm::mat4 Translate(float translateX, float translateY, float translateZ)
     {
-        return Translate(translation.x, translation.y, translation.z);
+        // TODO(student): Implement the translation matrix
+        return glm::mat4(1);
     }
 
     // Scaling matrix
-    inline glm::mat4 Scale(const glm::vec3 &scale)
+    inline glm::mat4 Scale(float scaleX, float scaleY, float scaleZ)
     {
-        return Scale(scale.x, scale.y, scale.z);
+        // TODO(student): Implement the scaling matrix
+        return glm::mat4(1);
+    }
+
+    // Rotation matrix relative to the OZ axis
+    inline glm::mat4 RotateOZ(float radians)
+    {
+        // TODO(student): Implement the rotation matrix
+        return glm::mat4(1);
+    }
+
+    // Rotation matrix relative to the OY axis
+    inline glm::mat4 RotateOY(float radians)
+    {
+        // TODO(student): Implement the rotation matrix
+        return glm::mat4(1);
+    }
+
+    // Rotate matrix relative to the OX axis
+    inline glm::mat4 RotateOX(float radians)
+    {
+        // TODO(student): Implement the rotation matrix
+        return glm::mat4(1);
+    }
+
+    // Perspective projection matrix
+    inline glm::mat4 Perspective(
+        float fovy, float aspect, float zNear, float zFar)
+    {
+        // TODO(student): Implement the perspective projection matrix
+        return glm::mat4(1);
+    }
+
+    // View matrix
+    inline glm::mat4 View(
+        const glm::vec3& position,
+        const glm::vec3& forward,
+        const glm::vec3& right,
+        const glm::vec3& up)
+    {
+        // TODO(student): Implement the view matrix
+        return glm::mat4(1);
     }
 
 }   // namespace transform3D

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "components/software_rendering_scene.h"
+#include "core/gpu/frame_buffer.h"
 
-#include "lab/lab01/triangle_rasterizer.h"
-#include "lab/lab02/transform2D.h"
+#include "triangle_rasterizer.h"
 
 namespace lab
 {
@@ -16,14 +16,8 @@ namespace lab
         void Initialize() override;
 
      private:
-        void DrawShapes();
         void Rasterize(
             const std::vector<VertexFormat> &vertices,
-            const std::vector<unsigned int> &indices,
-            const glm::mat3 transformation);
-        void OnInputUpdate(float deltaTime, int mods) override;
-
-        transform2D::LogicSpace logic_space;
-        transform2D::ViewportSpace viewport_space;
+            const std::vector<unsigned int> &indices);
     };
 }   // namespace lab

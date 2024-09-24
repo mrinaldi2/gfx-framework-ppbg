@@ -3,7 +3,6 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <stb/stb_image.h>
 
 using namespace std;
 using namespace lab;
@@ -17,6 +16,9 @@ using namespace lab;
 
 Lab07::Lab07()
 {
+    controlled_light_source_index = 0;
+
+    angle = 0;
 }
 
 
@@ -27,48 +29,6 @@ Lab07::~Lab07()
 
 void Lab07::Init()
 {
-    // Load textures
-    {
-        Texture2D* texture = LoadTexture("src\\lab\\lab7\\images\\grass_bilboard.png");
-        mapTextures["grass"] = texture;
-    }
-
-    {
-        Texture2D* texture = LoadTexture("src\\lab\\lab7\\images\\crate.jpg");
-        mapTextures["crate"] = texture;
-    }
-
-    {
-        Texture2D* texture = LoadTexture("src\\lab\\lab7\\images\\earth.png");
-        mapTextures["earth"] = texture;
-    }
-
-    {
-        Texture2D* texture = LoadTexture("src\\lab\\lab7\\images\\noise.png");
-        mapTextures["noise"] = texture;
-    }
-
-    {
-        Texture2D* texture = LoadTexture("assets\\models\\vegetation\\bamboo\\bamboo.png");
-        mapTextures["bamboo"] = texture;
-    }
-
-    {
-        Texture2D* texture = LoadTexture("assets\\textures\\ground.jpg");
-        mapTextures["ground"] = texture;
-    }
-
-    {
-        mapTextures["striped"] = CreateStripedTexture();
-    }
-
-    // Load meshes
-    {
-        Mesh* mesh = new Mesh("plane");
-        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "plane50.obj");
-        meshes[mesh->GetMeshID()] = mesh;
-    }
-
     {
         Mesh* mesh = new Mesh("box");
         mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "box.obj");
@@ -82,104 +42,53 @@ void Lab07::Init()
     }
 
     {
-        Mesh* mesh = new Mesh("bamboo");
-        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "vegetation", "bamboo"), "bamboo.obj");
+        Mesh* mesh = new Mesh("teapot");
+        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "teapot.obj");
         meshes[mesh->GetMeshID()] = mesh;
     }
 
-    // Create a simple quad
     {
-        vector<glm::vec2> textureCoords
-        {
-            // TODO(student): Specify the texture coordinates for the square
-            glm::vec2(0.0f, 0.0f),  // top right
-            glm::vec2(0.0f, 0.0f),  // bottom right
-            glm::vec2(0.0f, 0.0f),  // bottom left
-            glm::vec2(0.0f, 0.0f)   // top left
-        };
-
-        vector<VertexFormat> vertices
-        {
-            VertexFormat(glm::vec3(0.5f,   0.5f, 0.0f), glm::vec3(0), glm::vec3(0), textureCoords[0]),
-            VertexFormat(glm::vec3(0.5f,   -0.5f, 0.0f), glm::vec3(0), glm::vec3(0), textureCoords[1]),
-            VertexFormat(glm::vec3(-0.5f,   -0.5f, 0.0f), glm::vec3(0), glm::vec3(0), textureCoords[2]),
-            VertexFormat(glm::vec3(-0.5f,   0.5f, 0.0f), glm::vec3(0), glm::vec3(0), textureCoords[3]),
-        };
-
-        vector<unsigned int> indices =
-        {
-            0, 1, 3,
-            1, 2, 3
-        };
-
-        Mesh* mesh = new Mesh("square");
-        mesh->InitFromData(vertices, indices);
+        Mesh* mesh = new Mesh("bunny");
+        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "animals"), "bunny.obj");
         meshes[mesh->GetMeshID()] = mesh;
     }
 
-    // TODO(student): Load other shaders
-    LoadShader("LabShader");
-}
-
-Texture2D* Lab07::LoadTexture(const char* imagePath)
-{
-    int width, height, channels;
-    unsigned char* imageData = stbi_load(imagePath, &width, &height, &channels, 0);
-
-    return CreateTexture(width, height, channels, imageData);
-}
-
-Texture2D* Lab07::CreateTexture(unsigned int width, unsigned int height,
-    unsigned int channels, unsigned char* data)
-{
-    GLuint textureID = 0;
-    unsigned int size = width * height * channels;
-
-    // TODO(student): Generate and bind the new texture ID
-
-    if (GLEW_EXT_texture_filter_anisotropic) {
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
+    {
+        Mesh* mesh = new Mesh("plane");
+        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "plane50.obj");
+        meshes[mesh->GetMeshID()] = mesh;
     }
-    // TODO(student): Set the texture parameters (MIN_FILTER and MAG_FILTER) using glTexParameteri
 
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    CheckOpenGLError();
+    // Create a shader program for drawing face polygon with the color of the normal
+    {
+        Shader *shader = new Shader("LabShader");
+        shader->AddShader(PATH_JOIN(window->props.selfDir, "src/lab", "lab07", "shaders", "VertexShader.glsl"), GL_VERTEX_SHADER);
+        shader->AddShader(PATH_JOIN(window->props.selfDir, "src/lab", "lab07", "shaders", "FragmentShader.glsl"), GL_FRAGMENT_SHADER);
+        shader->CreateAndLink();
+        shaders[shader->GetName()] = shader;
+    }
 
+    // Light & material properties
+    {
+        point_light_positions[9] = glm::vec3(0, 1, 1);
+        spot_light_positions[9] = glm::vec3(1, 1, 1);
 
-    // TODO(student): Use the "glTexImage2D" directive to load the information
-    // into the graphics processor's memory. Use the correct format based on
-    // the number of components:
-    //   - 1 color channel - GL_RED
-    //   - 2 color channels - GL_RG
-    //   - 3 color channels - GL_RGB
-    //   - 4 color channels - GL_RGBA
+        for (int i = 0; i < 10; i++) {
+            spot_light_directions[i] = glm::vec3(0, -1, 0);
+            spot_light_angles[i] = glm::radians (10.0f + rand() % 50);
 
-    // TODO(student): Generate texture mip-maps
-
-    CheckOpenGLError();
-
-    // Save the texture into a wrapper Texture2D class for using easier later during rendering phase
-    Texture2D* texture = new Texture2D();
-    texture->Init(textureID, width, height, channels);
-
-    SAFE_FREE_ARRAY(data);
-    return texture;
-}
-
-Texture2D* Lab07::CreateStripedTexture()
-{
-    unsigned int width = 1024;
-    unsigned int height = 256;
-    unsigned int channels = 3;
-
-    unsigned int size = width * height * channels;
-    unsigned char *data = new unsigned char[size];
-    // TODO(student): Generate the information for a striped image,
-    // where all the pixels on the same line have the same color.
-    // The color of the pixels of a line is chosen randomly.
-
-
-    return CreateTexture(width, height, channels, data);
+            point_light_colors[i] = glm::vec3(
+                rand() % 256 / 255.0f,
+                rand() % 256 / 255.0f,
+                rand() % 256 / 255.0f
+            );
+            spot_light_colors[i] = glm::vec3(
+                rand() % 256 / 255.0f,
+                rand() % 256 / 255.0f,
+                rand() % 256 / 255.0f
+            );
+        }
+    }
 }
 
 void Lab07::FrameStart()
@@ -193,51 +102,79 @@ void Lab07::FrameStart()
     glViewport(0, 0, resolution.x, resolution.y);
 }
 
-
 void Lab07::Update(float deltaTimeSeconds)
 {
-    {
-        glm::mat4 modelMatrix = glm::mat4(1);
-        modelMatrix = glm::translate(modelMatrix, glm::vec3(1, 1, -3));
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(2));
-        RenderSimpleMesh(meshes["sphere"], shaders["LabShader"], modelMatrix, mapTextures["earth"]);
+    angle += glm::radians(6.0f) * deltaTimeSeconds;
+
+    for (int i = 0; i < 9; i++) {
+        glm::mat4 rotation = glm::rotate(glm::mat4(1.0), angle + i * glm::radians(360.0f) / 9, glm::vec3(0, 1, 0));
+
+        point_light_positions[i] = glm::vec3(glm::mat3(rotation) * glm::vec3(5, 1.5 + sin(Engine::GetElapsedTime() + i/2.0f), 0));
+        spot_light_positions[i] = glm::vec3(glm::mat3(rotation) * glm::vec3(3, 1.5 + sin(Engine::GetElapsedTime() + i / 2.0f), 0));
     }
 
     {
-        glm::mat4 modelMatrix = glm::mat4(1);
-        modelMatrix = glm::translate(modelMatrix, glm::vec3(2, 0.5f, 0));
-        modelMatrix = glm::rotate(modelMatrix, RADIANS(60.0f), glm::vec3(1, 0, 0));
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.75f));
-        RenderSimpleMesh(meshes["box"], shaders["LabShader"], modelMatrix, mapTextures["crate"], mapTextures["striped"]);
+        glm::mat4 model = glm::mat4(1);
+        model = glm::translate(model, glm::vec3(0, 1, 0));
+        RenderSimpleMesh(meshes["sphere"], shaders["LabShader"], model, glm::vec3(1, 1, 0));
     }
 
     {
-        glm::mat4 modelMatrix = glm::mat4(1);
-        modelMatrix = glm::translate(modelMatrix, glm::vec3(-2, 0.5f, 0));
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.75f));
-        modelMatrix = glm::rotate(modelMatrix, RADIANS(75.0f), glm::vec3(1, 1, 0));
-        RenderSimpleMesh(meshes["box"], shaders["LabShader"], modelMatrix, mapTextures["striped"]);
+        glm::mat4 model = glm::mat4(1);
+        model = glm::translate(model, glm::vec3(2, 0, 0));
+        model = glm::rotate(model, glm::radians(-160.0f), glm::vec3(0, 1, 0));
+        model = glm::scale(model, glm::vec3(2.0f));
+        RenderSimpleMesh(meshes["teapot"], shaders["LabShader"], model, glm::vec3(1, 0, 1));
     }
 
     {
-        glm::mat4 modelMatrix = glm::mat4(1);
-        modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.5f, 0.0f));
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5f));
-        RenderSimpleMesh(meshes["square"], shaders["LabShader"], modelMatrix, mapTextures["grass"]);
+        glm::mat4 model = glm::mat4(1);
+        model = glm::translate(model, glm::vec3(5, 0, 1.4));
+        model = glm::rotate(model, glm::radians(-160.0f), glm::vec3(0, 1, 0));
+        model = glm::scale(model, glm::vec3(3.0f));
+        RenderSimpleMesh(meshes["teapot"], shaders["LabShader"], model, glm::vec3(1, 1, 0));
     }
 
     {
-        glm::mat4 modelMatrix = glm::mat4(1);
-        modelMatrix = glm::translate(modelMatrix, glm::vec3(-2, -0.5f, -3));
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.1f));
-        RenderSimpleMesh(meshes["bamboo"], shaders["LabShader"], modelMatrix, mapTextures["bamboo"]);
+        glm::mat4 model = glm::mat4(1);
+        model = glm::translate(model, glm::vec3(-2, 1.0f, 0));
+        model = glm::rotate(model, glm::radians(60.0f), glm::vec3(0, 1, 0));
+        model = glm::scale(model, glm::vec3(0.05f));
+        RenderSimpleMesh(meshes["bunny"], shaders["LabShader"], model, glm::vec3(0, 1, 0));
     }
 
     {
-        glm::mat4 modelMatrix = glm::mat4(1);
-        modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0.1, -15));
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-        RenderSimpleMesh(meshes["plane"], shaders["LabShader"], modelMatrix, mapTextures["ground"], mapTextures["noise"]);
+        glm::mat4 model = glm::mat4(1);
+        model = glm::translate(model, glm::vec3(-5, 1.5f, 1));
+        model = glm::rotate(model, glm::radians(60.0f), glm::vec3(0, 1, 0));
+        model = glm::scale(model, glm::vec3(0.1f));
+        RenderSimpleMesh(meshes["bunny"], shaders["LabShader"], model, glm::vec3(0, 1, 1));
+    }
+
+    // Render ground
+    {
+        glm::mat4 model = glm::mat4(1);
+        model = glm::translate(model, glm::vec3(0, 0.01f, 0));
+        model = glm::scale(model, glm::vec3(0.25f));
+        RenderSimpleMesh(meshes["plane"], shaders["LabShader"], model, glm::vec3(1));
+    }
+
+    // Render the point lights in the scene
+    for (int i = 0; i < 10; i++)
+    {
+        glm::mat4 model = glm::mat4(1);
+        model = glm::translate(model, point_light_positions[i]);
+        model = glm::scale(model, glm::vec3(0.1f));
+        RenderMesh(meshes["sphere"], shaders["Simple"], model);
+    }
+
+    // Render the spot lights in the scene
+    for (int i = 0; i < 10; i++)
+    {
+        glm::mat4 model = glm::mat4(1);
+        model = glm::translate(model, spot_light_positions[i]);
+        model = glm::scale(model, glm::vec3(0.1f));
+        RenderMesh(meshes["sphere"], shaders["Simple"], model);
     }
 }
 
@@ -247,8 +184,7 @@ void Lab07::FrameEnd()
     DrawCoordinateSystem();
 }
 
-
-void Lab07::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & modelMatrix, Texture2D* texture1, Texture2D* texture2)
+void Lab07::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & model, const glm::vec3 &object_color)
 {
     if (!mesh || !shader || !shader->GetProgramID())
         return;
@@ -256,59 +192,43 @@ void Lab07::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & model
     // Render an object using the specified shader and the specified position
     glUseProgram(shader->program);
 
-    // Bind model matrix
+    // Send shader uniforms for light & material properties
+
+    // TODO(student): Send the information about the light sources
+    // (positions of the point light sources, colors of the point light
+    // sources, positions of the spot light sources, colors of the spot light
+    // sources, directions of the spot light sources and angles for the
+    // spot light sources) in attributes of uniform type. Use the attributes
+    // defined in "lab07.h". Send 10 entities of each.
+
+    glm::vec3 eye_position = GetSceneCamera()->m_transform->GetWorldPosition();
+    // TODO(student): Set eye position (camera position) uniform
+
+    glm::vec3 material_ka = object_color;
+    glm::vec3 material_kd = object_color;
+    glm::vec3 material_ks = object_color;
+    int material_shininess = 30;
+    // TODO(student): Set material property uniforms (shininess, ka, kd, ks)
+
+    // Send the model matrix uniform
     GLint loc_model_matrix = glGetUniformLocation(shader->program, "Model");
-    glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+    glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, glm::value_ptr(model));
 
-    // Bind view matrix
-    glm::mat4 viewMatrix = GetSceneCamera()->GetViewMatrix();
+    // Send the view matrix unfirom
+    glm::mat4 view = GetSceneCamera()->GetViewMatrix();
     int loc_view_matrix = glGetUniformLocation(shader->program, "View");
-    glUniformMatrix4fv(loc_view_matrix, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+    glUniformMatrix4fv(loc_view_matrix, 1, GL_FALSE, glm::value_ptr(view));
 
-    // Bind projection matrix
-    glm::mat4 projectionMatrix = GetSceneCamera()->GetProjectionMatrix();
+    // Send the projection matrix uniform
+    glm::mat4 projection = GetSceneCamera()->GetProjectionMatrix();
     int loc_projection_matrix = glGetUniformLocation(shader->program, "Projection");
-    glUniformMatrix4fv(loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-
-    // TODO(student): Set any other shader uniforms that you need
-
-    if (texture1)
-    {
-        // TODO(student): Do these:
-        // - activate texture location 0
-        // - bind the texture1 ID
-        // - send theuniform value
-
-    }
-
-    if (texture2)
-    {
-        // TODO(student): Do these:
-        // - activate texture location 1
-        // - bind the texture2 ID
-        // - send the uniform value
-
-    }
+    glUniformMatrix4fv(loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));
 
     // Draw the object
     glBindVertexArray(mesh->GetBuffers()->m_VAO);
     glDrawElements(mesh->GetDrawMode(), static_cast<int>(mesh->indices.size()), GL_UNSIGNED_INT, 0);
 }
 
-void Lab07::LoadShader(const std::string& name)
-{
-    std::string shaderPath = PATH_JOIN(window->props.selfDir, "src/lab", "lab7", "shaders");
-
-    // Create a shader program
-    {
-        Shader* shader = new Shader(name);
-        shader->AddShader(PATH_JOIN(shaderPath, name + ".VS.glsl"), GL_VERTEX_SHADER);
-        shader->AddShader(PATH_JOIN(shaderPath, name + ".FS.glsl"), GL_FRAGMENT_SHADER);
-
-        shader->CreateAndLink();
-        shaders[shader->GetName()] = shader;
-    }
-}
 
 /*
  *  These are callback functions. To find more about callbacks and
@@ -318,12 +238,52 @@ void Lab07::LoadShader(const std::string& name)
 
 void Lab07::OnInputUpdate(float deltaTime, int mods)
 {
+    if (!window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT))
+    {
+        const float speed = 2;
+
+        glm::vec3 up = glm::vec3(0, 1, 0);
+        glm::vec3 right = GetSceneCamera()->m_transform->GetLocalOXVector();
+        glm::vec3 forward = GetSceneCamera()->m_transform->GetLocalOZVector();
+        forward = glm::normalize(glm::vec3(forward.x, 0, forward.z));
+
+        glm::vec3* light_position = nullptr;
+
+        if (controlled_light_source_index == 0) {
+            light_position = &point_light_positions[9];
+        }
+
+        if (controlled_light_source_index == 1) {
+            light_position = &spot_light_positions[9];
+        }
+
+        // Control light position using on W, A, S, D, E, Q
+        if (window->KeyHold(GLFW_KEY_W)) (*light_position) -= forward * deltaTime * speed;
+        if (window->KeyHold(GLFW_KEY_A)) (*light_position) -= right * deltaTime * speed;
+        if (window->KeyHold(GLFW_KEY_S)) (*light_position) += forward * deltaTime * speed;
+        if (window->KeyHold(GLFW_KEY_D)) (*light_position) += right * deltaTime * speed;
+        if (window->KeyHold(GLFW_KEY_E)) (*light_position) += up * deltaTime * speed;
+        if (window->KeyHold(GLFW_KEY_Q)) (*light_position) -= up * deltaTime * speed;
+    }
+
+    {
+        glm::vec3 &light_direction = spot_light_directions[9];
+        float &angle = spot_light_angles[9];
+        // TODO(student): Change the lighting direction and angle of the spot
+        // light source from the keyboard. From the keys, implement the possibility
+        // of rotating the lighting direction relative to the OX and OZ axes, in both
+        // directions and the possibility of increasing and decreasing the angle.
+
+    }
 }
 
 
 void Lab07::OnKeyPress(int key, int mods)
 {
     // Add key press event
+    if (key == GLFW_KEY_F) {
+        controlled_light_source_index = (controlled_light_source_index + 1) % 2;
+    }
 }
 
 

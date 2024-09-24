@@ -1,13 +1,10 @@
 #pragma once
 
-#include "components/software_rendering_scene.h"
-#include "core/gpu/frame_buffer.h"
-
-#include "triangle_rasterizer.h"
+#include "components/primitives_rendering_scene.h"
 
 namespace lab
 {
-    class Lab01 : public gfxc::SoftwareRenderScene
+    class Lab01 : public gfxc::PrimitivesRenderingScene
     {
      public:
         Lab01();
@@ -15,9 +12,12 @@ namespace lab
 
         void Initialize() override;
 
-     private:
-        void Rasterize(
-            const std::vector<VertexFormat> &vertices,
-            const std::vector<unsigned int> &indices);
+     protected:
+         void Exercise1();
+         void Exercise2();
+         void Exercise3();
+         void Exercise4();
+         void Exercise5();
+         void Exercise6();
     };
 }   // namespace lab
