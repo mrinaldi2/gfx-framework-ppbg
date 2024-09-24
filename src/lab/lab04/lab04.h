@@ -1,24 +1,24 @@
 #pragma once
 
-#include <string>
+#include <vector>
 
 #include "components/simple_scene.h"
-#include "core/gpu/image.h"
-#include "core/gpu/depth_image.h"
 
+#include "lab/lab02/transform2D.h"
 
-namespace gfxc
+namespace lab
 {
-    class SoftwareRenderScene : public gfxc::SimpleScene
+    class Lab04 : public gfxc::SimpleScene
     {
      public:
-        SoftwareRenderScene();
-        ~SoftwareRenderScene();
+        Lab04();
+        ~Lab04();
 
         void Init() override;
 
      private:
-        virtual void Initialize() = 0;
+        void CreateMesh(const char *name, const std::vector<VertexFormat> &vertices, const std::vector<unsigned int> &indices);
+        void DrawObjects(gfxc::Camera *camera, const transform2D::ViewportSpace &viewport_space);
 
         void FrameStart() override;
         void Update(float deltaTimeSeconds) override;
@@ -33,10 +33,12 @@ namespace gfxc
         void OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY) override;
         void OnWindowResize(int width, int height) override;
 
-     protected:
-        Image *image;
-        DepthImage *depthImage;
+        void RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 & modelMatrix,
+            const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix);
 
-        bool saveScreenToImage;
+     protected:
+        transform2D::ViewportSpace viewport_space;
+        glm::vec3 color;
+        GLenum cullFace;
     };
-}   // namespace m2
+}   // namespace lab

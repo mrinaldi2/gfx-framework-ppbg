@@ -42,6 +42,7 @@ namespace gfxc
 
         virtual void RenderMesh2D(Mesh *mesh, Shader *shader, const glm::mat3 &modelMatrix);
         virtual void RenderMesh2D(Mesh *mesh, const glm::mat3 &modelMatrix, const glm::vec3 &color) const;
+        virtual void RenderMesh2D(Mesh* mesh, Shader* shader, const glm::ivec2 &window_resolution, const glm::ivec4 &viewport) const;
 
         virtual void RenderMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelMatrix);
 

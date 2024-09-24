@@ -16,7 +16,9 @@ using namespace gfxc;
  */
 
 
-SoftwareRenderScene::SoftwareRenderScene()
+SoftwareRenderScene::SoftwareRenderScene() :
+    image (nullptr),
+    depthImage (nullptr)
 {
     saveScreenToImage = false;
     window->SetSize(900, 900);
@@ -25,11 +27,14 @@ SoftwareRenderScene::SoftwareRenderScene()
 
 SoftwareRenderScene::~SoftwareRenderScene()
 {
+    delete depthImage;
     delete image;
 }
 
 void SoftwareRenderScene::Init()
 {
+    GetCameraInput()->SetActive (false);
+
     {
         Mesh* mesh = new Mesh("quad");
         mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "quad.obj");
@@ -50,12 +55,12 @@ void SoftwareRenderScene::Init()
     //}
 
     image = new Image();
-    depthImage = new Image();
+    depthImage = new DepthImage();
 
     Initialize();
 
     image->UpdateInternalData();
-    depthImage->UpdateInternalData();
+    //depthImage->UpdateInternalData();
 }
 
 void SoftwareRenderScene::FrameStart()

@@ -78,6 +78,15 @@ void SimpleScene::InitResources()
         shaders[shader->GetName()] = shader;
     }
 
+    // Create a shader program for drawing face polygon with the color of the normal
+    {
+        Shader *shader = new Shader("Simple2D");
+        shader->AddShader(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::SHADERS, "Simple2D.VS.glsl"), GL_VERTEX_SHADER);
+        shader->AddShader(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::SHADERS, "Simple2D.FS.glsl"), GL_FRAGMENT_SHADER);
+        shader->CreateAndLink();
+        shaders[shader->GetName()] = shader;
+    }
+
     // Create a shader program for drawing vertex colors
     {
         Shader *shader = new Shader("Color");
@@ -247,6 +256,19 @@ void SimpleScene::RenderMesh2D(Mesh * mesh, const glm::mat3 & modelMatrix, const
     glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(camera->GetProjectionMatrix()));
     glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(model));
     glUniform3f(shader->GetUniformLocation("color"), color.r, color.g, color.b);
+
+    mesh->Render();
+}
+
+void SimpleScene::RenderMesh2D(Mesh * mesh, Shader * shader,
+    const glm::ivec2 & window_resolution, const glm::ivec4 & viewport) const
+{
+    if (!mesh || !shader || !shader->program)
+        return;
+
+    shader->Use();
+    glUniform2iv(glGetUniformLocation(shader->GetProgramID(), "window_resolution"), 1, glm::value_ptr(window_resolution));
+    glUniform4iv(glGetUniformLocation(shader->GetProgramID(), "viewport"), 1, glm::value_ptr(viewport));
 
     mesh->Render();
 }

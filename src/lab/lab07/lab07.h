@@ -1,28 +1,30 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
 
 #include "components/simple_scene.h"
-#include "core/gpu/image.h"
-#include "core/gpu/depth_image.h"
+#include "components/transform.h"
 
 
-namespace gfxc
+namespace lab
 {
-    class SoftwareRenderScene : public gfxc::SimpleScene
+    class Lab07 : public gfxc::SimpleScene
     {
      public:
-        SoftwareRenderScene();
-        ~SoftwareRenderScene();
+        Lab07();
+        ~Lab07();
 
         void Init() override;
 
      private:
-        virtual void Initialize() = 0;
-
         void FrameStart() override;
         void Update(float deltaTimeSeconds) override;
         void FrameEnd() override;
+
+        Texture2D *CreateTexture(unsigned int width, unsigned int height, unsigned int channels, unsigned char *data);
+        void RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelMatrix, Texture2D *texture1 = NULL, Texture2D *texture2 = NULL);
+        Texture2D *CreateStripedTexture();
 
         void OnInputUpdate(float deltaTime, int mods) override;
         void OnKeyPress(int key, int mods) override;
@@ -33,10 +35,9 @@ namespace gfxc
         void OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY) override;
         void OnWindowResize(int width, int height) override;
 
-     protected:
-        Image *image;
-        DepthImage *depthImage;
+        Texture2D *LoadTexture(const char *imagePath);
+        void LoadShader(const std::string& name);
 
-        bool saveScreenToImage;
+        std::unordered_map<std::string, Texture2D *> mapTextures;
     };
-}   // namespace m2
+}   // namespace lab

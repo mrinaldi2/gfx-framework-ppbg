@@ -1,28 +1,24 @@
 #pragma once
 
-#include <string>
-
 #include "components/simple_scene.h"
-#include "core/gpu/image.h"
-#include "core/gpu/depth_image.h"
 
 
-namespace gfxc
+namespace lab
 {
-    class SoftwareRenderScene : public gfxc::SimpleScene
+    class Lab09 : public gfxc::SimpleScene
     {
      public:
-        SoftwareRenderScene();
-        ~SoftwareRenderScene();
+        Lab09();
+        ~Lab09();
 
         void Init() override;
 
      private:
-        virtual void Initialize() = 0;
-
         void FrameStart() override;
         void Update(float deltaTimeSeconds) override;
         void FrameEnd() override;
+
+        void RenderMeshInstanced(Mesh *mesh, Shader *shader, const glm::mat4 &modelMatrix, int instances, const glm::vec3 &color = glm::vec3(1));
 
         void OnInputUpdate(float deltaTime, int mods) override;
         void OnKeyPress(int key, int mods) override;
@@ -34,9 +30,9 @@ namespace gfxc
         void OnWindowResize(int width, int height) override;
 
      protected:
-        Image *image;
-        DepthImage *depthImage;
-
-        bool saveScreenToImage;
+        // Info about the generated surfaces
+        glm::vec3 control_p0, control_p1, control_p2, control_p3;
+        unsigned int no_of_generated_points, no_of_instances, surface_type;
+        float max_translate, max_rotate;
     };
-}   // namespace m2
+}   // namespace lab

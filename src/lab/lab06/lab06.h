@@ -1,28 +1,25 @@
 #pragma once
 
-#include <string>
-
 #include "components/simple_scene.h"
-#include "core/gpu/image.h"
-#include "core/gpu/depth_image.h"
+#include "components/transform.h"
 
 
-namespace gfxc
+namespace lab
 {
-    class SoftwareRenderScene : public gfxc::SimpleScene
+    class Lab06 : public gfxc::SimpleScene
     {
      public:
-        SoftwareRenderScene();
-        ~SoftwareRenderScene();
+        Lab06();
+        ~Lab06();
 
         void Init() override;
 
      private:
-        virtual void Initialize() = 0;
-
         void FrameStart() override;
         void Update(float deltaTimeSeconds) override;
         void FrameEnd() override;
+
+        void RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelMatrix, const glm::vec3 &color = glm::vec3(1));
 
         void OnInputUpdate(float deltaTime, int mods) override;
         void OnKeyPress(int key, int mods) override;
@@ -33,10 +30,15 @@ namespace gfxc
         void OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY) override;
         void OnWindowResize(int width, int height) override;
 
-     protected:
-        Image *image;
-        DepthImage *depthImage;
+        glm::vec3 point_light_positions[10];
+        glm::vec3 spot_light_positions[10];
+        glm::vec3 spot_light_directions[10];
+        glm::vec3 point_light_colors[10];
+        glm::vec3 spot_light_colors[10];
+        float spot_light_angles[10];
 
-        bool saveScreenToImage;
+        int controlled_light_source_index;
+        glm::vec3 controlled_light_position;
+        float angle;
     };
-}   // namespace m2
+}   // namespace lab

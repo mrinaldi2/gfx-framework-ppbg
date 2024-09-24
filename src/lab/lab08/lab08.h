@@ -1,25 +1,19 @@
 #pragma once
 
-#include <string>
-
 #include "components/simple_scene.h"
-#include "core/gpu/image.h"
-#include "core/gpu/depth_image.h"
 
 
-namespace gfxc
+namespace lab
 {
-    class SoftwareRenderScene : public gfxc::SimpleScene
+    class Lab08 : public gfxc::SimpleScene
     {
      public:
-        SoftwareRenderScene();
-        ~SoftwareRenderScene();
+        Lab08();
+        ~Lab08();
 
         void Init() override;
 
      private:
-        virtual void Initialize() = 0;
-
         void FrameStart() override;
         void Update(float deltaTimeSeconds) override;
         void FrameEnd() override;
@@ -33,10 +27,11 @@ namespace gfxc
         void OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY) override;
         void OnWindowResize(int width, int height) override;
 
-     protected:
-        Image *image;
-        DepthImage *depthImage;
+        void LoadShader(const std::string& name,
+            const std::string& VS, const std::string& FS, const std::string& GS);
+        void RenderSimpleMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix, Texture2D* texture = nullptr);
 
-        bool saveScreenToImage;
+     private:
+        std::unordered_map<std::string, Texture2D*> mapTextures;
     };
-}   // namespace m2
+}   // namespace lab
