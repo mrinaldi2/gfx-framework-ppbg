@@ -47,10 +47,7 @@ float TriangleRasterizer::ComputeTriangleArea(
     const glm::vec2 &v2,
     const glm::vec2 &v3)
 {
-    // TODO(student): Calculate and return the area of
-    // the triangle determined by vertices v1, v2 and v3
-    //
-    // Use Heron's formula
+    // TODO(student): Ex. 1
 
     return 0;
 }
@@ -61,15 +58,9 @@ bool TriangleRasterizer::CheckPointInsideTriangle(
     const VertexFormat &v2,
     const VertexFormat &v3)
 {
-    const float EPSILON = 50.0f;
+    const float EPSILON = 5.0f;
 
-    // TODO(student): Check if the point p, received as a
-    // parameter, is found in the triangle determined by
-    // the vertices v1, v2 and v3
-    //
-    // Use the areas for this process, along with the EPSILON
-    // value to compare the areas to account for possible
-    // precision errors that may occur
+    // TODO(student): Ex. 1
 
     return false;
 }
@@ -80,11 +71,7 @@ glm::vec3 TriangleRasterizer::ComputePixelColor(
     const VertexFormat &v2,
     const VertexFormat &v3)
 {
-    // TODO(student): Calculate and return the color at point p,
-    // received as a parameter, by interpolating between the
-    // colors of vertices v1, v2 and v3
-    //
-    // Use the barycentric coordinates of point p
+    // TODO(student): Ex. 2
 
     return v3.color;
 }
@@ -95,11 +82,7 @@ float TriangleRasterizer::ComputePixelDepth(
     const VertexFormat &v2,
     const VertexFormat &v3)
 {
-    // TODO(student): Calculate and return the depth value of
-    // point p, received as a parameter, by interpolation between
-    // the depth values (position.z) of vertices v1, v2 and v3
-    //
-    // Use the barycentric coordinates of point p
+    // TODO(student): Ex. 3
 
     return v3.position.z;
 }

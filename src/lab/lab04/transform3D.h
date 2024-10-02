@@ -8,35 +8,35 @@ namespace transform3D
     // Translation matrix
     inline glm::mat4 Translate(float translateX, float translateY, float translateZ)
     {
-        // TODO(student): Implement the translation matrix
+        // TODO(student): Ex. 1
         return glm::mat4(1);
     }
 
     // Scaling matrix
     inline glm::mat4 Scale(float scaleX, float scaleY, float scaleZ)
     {
-        // TODO(student): Implement the scaling matrix
+        // TODO(student): Ex. 1
         return glm::mat4(1);
     }
 
     // Rotation matrix relative to the OZ axis
     inline glm::mat4 RotateOZ(float radians)
     {
-        // TODO(student): Implement the rotation matrix
+        // TODO(student): Ex. 1
         return glm::mat4(1);
     }
 
     // Rotation matrix relative to the OY axis
     inline glm::mat4 RotateOY(float radians)
     {
-        // TODO(student): Implement the rotation matrix
+        // TODO(student): Ex. 1
         return glm::mat4(1);
     }
 
     // Rotate matrix relative to the OX axis
     inline glm::mat4 RotateOX(float radians)
     {
-        // TODO(student): Implement the rotation matrix
+        // TODO(student): Ex. 1
         return glm::mat4(1);
     }
 
@@ -44,7 +44,7 @@ namespace transform3D
     inline glm::mat4 Perspective(
         float fovy, float aspect, float zNear, float zFar)
     {
-        // TODO(student): Implement the perspective projection matrix
+        // TODO(student): Ex. 2
         return glm::mat4(1);
     }
 
@@ -55,7 +55,7 @@ namespace transform3D
         const glm::vec3& right,
         const glm::vec3& up)
     {
-        // TODO(student): Implement the view matrix
+        // TODO(student): Ex. 4
         return glm::mat4(1);
     }
 

@@ -22,8 +22,7 @@ void Lab03::Initialize()
     logic_space = { 0, 0, 16.0f, 9.0f };
     viewport_space = { 0, 0, 1280, 720 };
 
-    // TODO(student): Divide the screen into 4 quadrants and
-    // draw the geometric shapes 4 times, once in each quadrant
+    // TODO(student): Ex. 4
 
     DrawShapes();
 }

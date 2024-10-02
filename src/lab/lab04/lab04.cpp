@@ -19,6 +19,8 @@ Lab04::~Lab04()
 
 void Lab04::Initialize()
 {
+    GetCameraInput()->SetActive(true);
+
     Camera *camera = GetSceneCamera();
     camera->SetPositionAndRotation(glm::vec3(0, 1, 0), glm::quatLookAt(glm::vec3 (0, 0, -1), glm::vec3 (0, 1, 0)));
     camera->Update();
@@ -133,8 +135,7 @@ glm::vec3 Lab04::ComputeClipSpacePosition(
     glm::vec4 homogenous_coordinate = transformation * 
         glm::vec4(position.x, position.y, position.z, 1);
 
-    // TODO(student): Apply the perspective division on the
-    // homogeneous coordinate
+    // TODO(student): Ex. 3
 
     glm::vec3 clip_space_pos = glm::vec3(homogenous_coordinate);
 
@@ -168,7 +169,9 @@ TRIANGLE_FACE Lab04::DetermineTriangleFace(
 
     glm::vec3 cross_produt = glm::cross(v23D - v13D, v33D - v13D);
 
-    // TODO(student): Determine and return which face of the 
+    // TODO(student): Ex. 5
+    //
+    // Determine and return which face of the
     // triangle is displayed. Use the sign of the z component
     // of the cross product as follows:
     // If the sign is positive, the front face of the triangle is displayed.
