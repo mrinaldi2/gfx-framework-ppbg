@@ -149,7 +149,7 @@ void Lab10::RenderSimpleMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelM
 
 void Lab10::LoadShader(const std::string& name, const std::string &VS, const std::string& FS, const std::string& GS)
 {
-    std::string shaderPath = PATH_JOIN(window->props.selfDir, "src/lab", "lab8", "shaders");
+    std::string shaderPath = PATH_JOIN(window->props.selfDir, "src/lab", "lab10", "shaders");
 
     // Create a shader program for particle system
     {

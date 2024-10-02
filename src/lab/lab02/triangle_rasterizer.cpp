@@ -57,11 +57,11 @@ float TriangleRasterizer::ComputeTriangleArea(
 
 bool TriangleRasterizer::CheckPointInsideTriangle(
     const glm::vec2 &p,
-    const VertexFormat& v1,
-    const VertexFormat& v2,
-    const VertexFormat& v3)
+    const VertexFormat &v1,
+    const VertexFormat &v2,
+    const VertexFormat &v3)
 {
-    const float EPSILON = 5.0f;
+    const float EPSILON = 50.0f;
 
     // TODO(student): Check if the point p, received as a
     // parameter, is found in the triangle determined by
@@ -75,10 +75,10 @@ bool TriangleRasterizer::CheckPointInsideTriangle(
 }
 
 glm::vec3 TriangleRasterizer::ComputePixelColor(
-    const glm::vec2& p,
-    const VertexFormat& v1,
-    const VertexFormat& v2,
-    const VertexFormat& v3)
+    const glm::vec2 &p,
+    const VertexFormat &v1,
+    const VertexFormat &v2,
+    const VertexFormat &v3)
 {
     // TODO(student): Calculate and return the color at point p,
     // received as a parameter, by interpolating between the
@@ -90,10 +90,10 @@ glm::vec3 TriangleRasterizer::ComputePixelColor(
 }
 
 float TriangleRasterizer::ComputePixelDepth(
-    const glm::vec2& p,
-    const VertexFormat& v1,
-    const VertexFormat& v2,
-    const VertexFormat& v3)
+    const glm::vec2 &p,
+    const VertexFormat &v1,
+    const VertexFormat &v2,
+    const VertexFormat &v3)
 {
     // TODO(student): Calculate and return the depth value of
     // point p, received as a parameter, by interpolation between

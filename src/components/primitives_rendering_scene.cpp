@@ -238,7 +238,7 @@ void PrimitivesRenderingScene::RenderText(const glm::vec2 &pos, const std::strin
     exercises.back().back().text_elements.push_back(TextElement(viewport_space_position, text, color, size));
 }
 
-/// Internal methods!
+// Internal methods!
 
 void PrimitivesRenderingScene::RenderArrow(const glm::vec2 &p1, const glm::vec2 &p2,
     const glm::vec3 &color, const std::string &label, unsigned int width, unsigned int head_size)

@@ -62,7 +62,7 @@ void Lab09::Init()
 
     {
         Mesh* mesh = new Mesh("sponza");
-        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, "src/lab", "lab10/models"), "SponzaNoFlag.obj");
+        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, "src/lab", "lab09/models"), "SponzaNoFlag.obj");
         meshes[mesh->GetMeshID()] = mesh;
     }
 
@@ -83,7 +83,7 @@ void Lab09::CreateFramebuffer(int width, int height)
 {
     // TODO(student): In this method, use the attributes
     // 'framebuffer_object', 'color_texture' and 'depth_texture'
-    // declared in lab3.h
+    // declared in lab09.h
 
     // TODO(student): Generate and bind the framebuffer
 

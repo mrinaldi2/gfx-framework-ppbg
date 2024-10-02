@@ -24,19 +24,19 @@ namespace lab
              const glm::vec2 &v2,
              const glm::vec2 &v3);
          static bool CheckPointInsideTriangle(
-             const glm::vec2& p,
-             const VertexFormat& v1,
-             const VertexFormat& v2,
-             const VertexFormat& v3);
+             const glm::vec2 &p,
+             const VertexFormat &v1,
+             const VertexFormat &v2,
+             const VertexFormat &v3);
          static glm::vec3 ComputePixelColor(
-             const glm::vec2& p,
-             const VertexFormat& v1,
-             const VertexFormat& v2,
-             const VertexFormat& v3);
+             const glm::vec2 &p,
+             const VertexFormat &v1,
+             const VertexFormat &v2,
+             const VertexFormat &v3);
          static float ComputePixelDepth(
              const glm::vec2 &p,
-             const VertexFormat& v1,
-             const VertexFormat& v2,
-             const VertexFormat& v3);
+             const VertexFormat &v1,
+             const VertexFormat &v2,
+             const VertexFormat &v3);
     };
 }   // namespace lab
