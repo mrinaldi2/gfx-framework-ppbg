@@ -43,9 +43,9 @@ void Lab11::Init()
     // Create a shader program for surface generation
     {
         Shader *shader = new Shader("SurfaceGeneration");
-        shader->AddShader(PATH_JOIN(window->props.selfDir, "src/lab", "lab9", "shaders", "VertexShader.glsl"), GL_VERTEX_SHADER);
-        shader->AddShader(PATH_JOIN(window->props.selfDir, "src/lab", "lab9", "shaders", "GeometryShader.glsl"), GL_GEOMETRY_SHADER);
-        shader->AddShader(PATH_JOIN(window->props.selfDir, "src/lab", "lab9", "shaders", "FragmentShader.glsl"), GL_FRAGMENT_SHADER);
+        shader->AddShader(PATH_JOIN(window->props.selfDir, "src/lab", "lab11", "shaders", "VertexShader.glsl"), GL_VERTEX_SHADER);
+        shader->AddShader(PATH_JOIN(window->props.selfDir, "src/lab", "lab11", "shaders", "GeometryShader.glsl"), GL_GEOMETRY_SHADER);
+        shader->AddShader(PATH_JOIN(window->props.selfDir, "src/lab", "lab11", "shaders", "FragmentShader.glsl"), GL_FRAGMENT_SHADER);
         shader->CreateAndLink();
         shaders[shader->GetName()] = shader;
     }
