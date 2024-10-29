@@ -47,9 +47,14 @@ float TriangleRasterizer::ComputeTriangleArea(
     const glm::vec2 &v2,
     const glm::vec2 &v3)
 {
-    // TODO(student): Ex. 1
+    float a = glm::length(v1 - v2);
+    float b = glm::length(v1 - v3);
+    float c = glm::length(v2 - v3);
 
-    return 0;
+    float s = 0.5f * (a + b + c);
+
+
+    return sqrt(s * (s - a) * (s - b) * (s - c));
 }
 
 bool TriangleRasterizer::CheckPointInsideTriangle(
@@ -60,9 +65,14 @@ bool TriangleRasterizer::CheckPointInsideTriangle(
 {
     const float EPSILON = 5.0f;
 
-    // TODO(student): Ex. 1
+    float area = ComputeTriangleArea(v1.position, v2.position, v3.position);
 
-    return false;
+    float areaU = ComputeTriangleArea(p, v1.position, v2.position);
+    float areaV = ComputeTriangleArea(p, v1.position, v3.position);
+    float areaW = ComputeTriangleArea(p, v2.position, v3.position);
+
+    return abs(area - (areaU + areaV + areaW)) < EPSILON;
+
 }
 
 glm::vec3 TriangleRasterizer::ComputePixelColor(
@@ -71,9 +81,14 @@ glm::vec3 TriangleRasterizer::ComputePixelColor(
     const VertexFormat &v2,
     const VertexFormat &v3)
 {
-    // TODO(student): Ex. 2
 
-    return v3.color;
+    float area = ComputeTriangleArea(v1.position, v2.position, v3.position);
+
+    float u = ComputeTriangleArea(p, v1.position, v2.position) / area;
+    float v = ComputeTriangleArea(p, v1.position, v3.position) / area;
+    float w = ComputeTriangleArea(p, v2.position, v3.position) / area;
+
+    return u * v3.color + v * v2.color + w * v1.color;
 }
 
 float TriangleRasterizer::ComputePixelDepth(
@@ -82,7 +97,11 @@ float TriangleRasterizer::ComputePixelDepth(
     const VertexFormat &v2,
     const VertexFormat &v3)
 {
-    // TODO(student): Ex. 3
+    float area = ComputeTriangleArea(v1.position, v2.position, v3.position);
 
-    return v3.position.z;
+    float u = ComputeTriangleArea(p, v1.position, v2.position) / area;
+    float v = ComputeTriangleArea(p, v1.position, v3.position) / area;
+    float w = ComputeTriangleArea(p, v2.position, v3.position) / area;
+
+    return u * v3.position.z + v * v2.position.z + w * v1.position.z;
 }

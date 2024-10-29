@@ -15,7 +15,11 @@ Lab02::~Lab02()
 {
 }
 
-void Lab02::Initialize()
+void Lab02::Initialize() {
+    Exercise2();
+}
+
+void Lab02::Exercise1()
 {
     image->Init(1280, 720, 3 /* channels */);
     depthImage->Init(1280, 720);
@@ -39,6 +43,62 @@ void Lab02::Initialize()
 
         Rasterize(vertices, indices);
     }
+}
+
+void Lab02::Exercise2() {
+    
+    image->Init(1280, 720, 3 /* channels */);
+    depthImage->Init(1280, 720);
+
+    {
+        vector<VertexFormat> vertices;
+        vector<unsigned int> indices;
+        
+        glm::vec2 center = glm::vec2(1280 / 2, 720 / 2);
+
+        float r = 200;
+
+        float numTriangles = 20;
+
+        float degrees = 360 / numTriangles;
+
+        vertices.push_back(VertexFormat(glm::vec3(center.x, center.y, 0.0f), glm::vec3(0, 0, 0)));
+        
+        for (int i = 0; i < numTriangles; i++) {
+            float x = center.x + r * cos(glm::radians(degrees * i));
+            float y = center.y + r * sin(glm::radians(degrees * i));
+
+            glm::vec3 color;
+            switch (i % 3) {
+            case 0:
+                color = glm::vec3(1, 0, 0);
+                break;
+            case 1:
+                color = glm::vec3(0, 1, 0);
+                break;
+            case 2:
+                color = glm::vec3(0, 0, 1);
+                break;
+            }
+
+            vertices.push_back(VertexFormat(glm::vec3(x, y, 0.0f), color));
+        }
+
+        for (int i = 0; i < numTriangles - 1; i++) {
+            
+            indices.push_back(0);
+            indices.push_back(i + 1);
+            indices.push_back(i + 2);
+        
+        }
+
+        indices.push_back(0);
+        indices.push_back(numTriangles);
+        indices.push_back(1);
+        
+        Rasterize(vertices, indices);
+    }
+
 }
 
 void Lab02::Rasterize(
