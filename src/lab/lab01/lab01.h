@@ -19,5 +19,7 @@ namespace lab
          void Exercise4();
          void Exercise5();
          void Exercise6();
+
+         float calculateArea(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3);
     };
 }   // namespace lab
