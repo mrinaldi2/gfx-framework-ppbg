@@ -19,12 +19,62 @@ void Lab03::Initialize()
     image->Init(1280, 720, 3 /* channels */);
     depthImage->Init(1280, 720);
 
+    Exercise2();
+    
+    
+}
+
+void Lab03::Exercise1() {
     logic_space = { 0, 0, 16.0f, 9.0f };
-    viewport_space = { 0, 0, 1280, 720 };
+    viewport_space = { 0, 0, 1280 / 2, 720 / 2 };
 
     // TODO(student): Ex. 4
 
     DrawShapes();
+
+    viewport_space = { 1280 / 2, 0, 1280 / 2, 720 / 2 };
+
+
+    DrawShapes();
+
+    viewport_space = { 0, 720 / 2, 1280 / 2, 720 / 2 };
+
+
+    DrawShapes();
+
+    viewport_space = { 1280 / 2, 720 / 2, 1280 / 2, 720 / 2 };
+
+
+    DrawShapes();
+}
+
+void Lab03::Exercise2() {
+
+    logic_space = { 0, 0, 16.0f, 9.0f };
+    viewport_space = { 0, 0, 1280, 720 };
+
+    vector<VertexFormat> vertices
+    {
+        VertexFormat(glm::vec3(0, 0,  0.5), glm::vec3(1, 0, 0)),
+        VertexFormat(glm::vec3(0.5, 0,  0.5), glm::vec3(1, 0, 0)),
+        VertexFormat(glm::vec3(0.25, 1,  0.5), glm::vec3(1, 1, 0)),
+    };
+
+    vector<unsigned int> indices
+    {
+        0, 1, 2,
+    };
+
+    glm::mat3 viewPortTransformation = transform2D::Viewport(logic_space, viewport_space);
+
+    {
+        glm::mat3 transformation = glm::mat3(1.0f);
+        transformation *= viewPortTransformation;
+        transformation *= transform2D::Translate(1, 6);
+
+        Rasterize(vertices, indices, transformation);
+    }
+
 }
 
 void Lab03::DrawShapes()
@@ -60,6 +110,7 @@ void Lab03::DrawShapes()
         glm::mat3 transformation = glm::mat4(1.0f);
         transformation *= viewPortTransformation;
         transformation *= transform2D::Translate(4, 6);
+        transformation *= transform2D::Scale(0.5, 0.5);
 
         Rasterize(vertices, indices, transformation);
     }
@@ -71,6 +122,7 @@ void Lab03::DrawShapes()
         glm::mat3 transformation = glm::mat4(1.0f);
         transformation *= viewPortTransformation;
         transformation *= transform2D::Translate(7, 6);
+        transformation *= transform2D::Scale(2, 2);
 
         Rasterize(vertices, indices, transformation);
     }
@@ -81,6 +133,7 @@ void Lab03::DrawShapes()
         glm::mat3 transformation = glm::mat4(1.0f);
         transformation *= viewPortTransformation;
         transformation *= transform2D::Translate(10, 6);
+        transformation *= transform2D::Rotate(glm::radians(45.0f));
 
         Rasterize(vertices, indices, transformation);
     }
@@ -93,6 +146,8 @@ void Lab03::DrawShapes()
         glm::mat3 transformation = glm::mat4(1.0f);
         transformation *= viewPortTransformation;
         transformation *= transform2D::Translate(13, 6);
+        transformation *= transform2D::Rotate(glm::radians(45.0f));
+        transformation *= transform2D::Scale(1, 2);
 
         Rasterize(vertices, indices, transformation);
     }
@@ -112,6 +167,9 @@ void Lab03::DrawShapes()
         glm::mat3 transformation = glm::mat4(1.0f);
         transformation *= viewPortTransformation;
         transformation *= transform2D::Translate(4, 2);
+        transformation *= transform2D::Translate(0.5, 0.5);
+        transformation *= transform2D::Scale(0.5, 0.5);
+        transformation *= transform2D::Translate(-0.5, -0.5);
 
         Rasterize(vertices, indices, transformation);
     }
@@ -123,6 +181,9 @@ void Lab03::DrawShapes()
         glm::mat3 transformation = glm::mat4(1.0f);
         transformation *= viewPortTransformation;
         transformation *= transform2D::Translate(7, 2);
+        transformation *= transform2D::Translate(0.5, 0.5);
+        transformation *= transform2D::Scale(2, 2);
+        transformation *= transform2D::Translate(-0.5, -0.5);
 
         Rasterize(vertices, indices, transformation);
     }
@@ -133,6 +194,9 @@ void Lab03::DrawShapes()
         glm::mat3 transformation = glm::mat4(1.0f);
         transformation *= viewPortTransformation;
         transformation *= transform2D::Translate(10, 2);
+        transformation *= transform2D::Translate(0.5, 0.5);
+        transformation *= transform2D::Rotate(glm::radians(45.0f));
+        transformation *= transform2D::Translate(-0.5, -0.5);
 
         Rasterize(vertices, indices, transformation);
     }
@@ -145,6 +209,10 @@ void Lab03::DrawShapes()
         glm::mat3 transformation = glm::mat4(1.0f);
         transformation *= viewPortTransformation;
         transformation *= transform2D::Translate(13, 2);
+        transformation *= transform2D::Translate(0.5, 0.5);
+        transformation *= transform2D::Rotate(glm::radians(45.0f));
+        transformation *= transform2D::Scale(1, 2);
+        transformation *= transform2D::Translate(-0.5, -0.5);
 
         Rasterize(vertices, indices, transformation);
     }

@@ -16,6 +16,8 @@ namespace lab
         void Initialize() override;
 
      private:
+        void Exercise1();
+        void Exercise2();
         void DrawShapes();
         void Rasterize(
             const std::vector<VertexFormat> &vertices,

@@ -7,22 +7,31 @@ namespace transform2D
     // Translation matrix
     inline glm::mat3 Translate(float translateX, float translateY)
     {
-        // TODO(student): Ex. 1
-        return glm::mat3(1);
+        return glm::transpose(
+            glm::mat3(1, 0, translateX,
+                0, 1, translateY,
+                0, 0, 1)
+        );
     }
 
     // Scaling matrix
     inline glm::mat3 Scale(float scaleX, float scaleY)
     {
-        // TODO(student): Ex. 1
-        return glm::mat3(1);
+        return glm::transpose(
+            glm::mat3(scaleX, 0, 0,
+                0, scaleY, 0,
+                0, 0, 1)
+        );
     }
 
     // Rotation matrix
     inline glm::mat3 Rotate(float radians)
     {
-        // TODO(student): Ex. 1
-        return glm::mat3(1);
+        return glm::transpose(
+            glm::mat3(cos(radians), -sin(radians), 0,
+                sin(radians), cos(radians), 0,
+                0, 0, 1)
+        );
     }
 
     struct ViewportSpace
@@ -52,10 +61,9 @@ namespace transform2D
         const LogicSpace& logic_space,
         const ViewportSpace& viewport_space)
     {
-        // TODO(student): Ex. 1
-        //
-        // You can use the translation and scaling transformations
-        return glm::mat3(1);
+        return Translate(viewport_space.x, viewport_space.y)
+            * Scale(viewport_space.width / logic_space.width, viewport_space.height / logic_space.height)
+            * Translate(-logic_space.x, -logic_space.y);
     }
 
 }   // namespace transform2D
