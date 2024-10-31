@@ -56,8 +56,8 @@ void Lab03::Exercise2() {
     vector<VertexFormat> vertices
     {
         VertexFormat(glm::vec3(0, 0,  0.5), glm::vec3(1, 0, 0)),
-        VertexFormat(glm::vec3(0.5, 0,  0.5), glm::vec3(1, 0, 0)),
-        VertexFormat(glm::vec3(0.25, 1,  0.5), glm::vec3(1, 1, 0)),
+        VertexFormat(glm::vec3(1, 0,  0.5), glm::vec3(1, 0, 0)),
+        VertexFormat(glm::vec3(0.5, 2,  0.5), glm::vec3(1, 1, 0)),
     };
 
     vector<unsigned int> indices
@@ -66,11 +66,50 @@ void Lab03::Exercise2() {
     };
 
     glm::mat3 viewPortTransformation = transform2D::Viewport(logic_space, viewport_space);
-
+    glm::vec2 center = glm::vec2(7.5f, 4.5f);
+    
     {
+        float radians = glm::radians(72.0f);
         glm::mat3 transformation = glm::mat3(1.0f);
         transformation *= viewPortTransformation;
-        transformation *= transform2D::Translate(1, 6);
+        transformation *= transform2D::Translate(center.x + cos(radians), center.y + sin(radians));
+     
+        Rasterize(vertices, indices, transformation);
+    }
+    {
+        float radians = glm::radians(0.0f);
+        glm::mat3 transformation = glm::mat3(1.0f);
+        transformation *= viewPortTransformation;
+        transformation *= transform2D::Translate(center.x + cos(radians) - 1, center.y + sin(radians));
+        transformation *= transform2D::Rotate(glm::radians(72.0f));
+        
+        Rasterize(vertices, indices, transformation);
+    }
+
+    {
+        float radians = glm::radians(125.f);
+        glm::mat3 transformation = glm::mat3(1.0f);
+        transformation *= viewPortTransformation;
+        transformation *= transform2D::Translate(center.x + sin(radians), center.y + cos(radians));
+        transformation *= transform2D::Rotate(glm::radians(144.0f));
+
+        Rasterize(vertices, indices, transformation);
+    }
+    {
+        float radians = glm::radians(90.0f);
+        glm::mat3 transformation = glm::mat3(1.0f);
+        transformation *= viewPortTransformation;
+        transformation *= transform2D::Translate(center.x + sin(radians) + 0.6f, center.y + cos(radians));
+        transformation *= transform2D::Rotate(glm::radians(216.0f));
+
+        Rasterize(vertices, indices, transformation);
+    }
+    {
+        float radians = glm::radians(90.0f);
+        glm::mat3 transformation = glm::mat3(1.0f);
+        transformation *= viewPortTransformation;
+        transformation *= transform2D::Translate(center.x + cos(radians) + 1.30f, center.y + sin(radians) - 0.05f);
+        transformation *= transform2D::Rotate(glm::radians(288.0f));
 
         Rasterize(vertices, indices, transformation);
     }
