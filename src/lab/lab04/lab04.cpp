@@ -53,9 +53,9 @@ void Lab04::DrawShape() {
 void Lab04::DrawTetraedru() {
     vector<VertexFormat> vertices
     {
-        VertexFormat(glm::vec3(-0.5, -0.5, -0.5), glm::vec3(1, 0, 0)),
-        VertexFormat(glm::vec3(0.5, -0.5, -0.5), glm::vec3(0, 1, 0)),
-        VertexFormat(glm::vec3(0, -0.5, 0.5), glm::vec3(0, 0, 1)),
+        VertexFormat(glm::vec3(-0.5, -0.5, 0.5), glm::vec3(1, 0, 0)),
+        VertexFormat(glm::vec3(0.5, -0.5, 0.5), glm::vec3(0, 1, 0)),
+        VertexFormat(glm::vec3(0, -0.5, -0.5), glm::vec3(0, 0, 1)),
         VertexFormat(glm::vec3(0, 0.5, 0), glm::vec3(0, 1, 1)),
     };
 
@@ -64,7 +64,7 @@ void Lab04::DrawTetraedru() {
         0, 1, 3,    // indices for first triangle
         1, 2, 3,    // indices for second triangle
         2, 0, 3,
-        0, 2, 1,
+        1, 0, 2
     };
 
     {
@@ -123,7 +123,7 @@ glm::mat4 Lab04::ModelTransformation()
 
     transformation *= transform3D::Translate(0, 1, -3);
     transformation *= transform3D::RotateOZ(glm::radians(45.0f));
-    transformation *= transform3D::RotateOY(glm::radians(125.0f));
+    transformation *= transform3D::RotateOY(glm::radians(45.0f));
     transformation *= transform3D::RotateOX(glm::radians(45.0f));
     transformation *= transform3D::Scale(1.25f, 1.25f, 1.25f);
 
@@ -266,6 +266,8 @@ void Lab04::OnKeyPress(int key, int mods)
     if (key == GLFW_KEY_F) {
         cull_face_option = (CULL_FACE_OPTION) 
             ((cull_face_option + 1) % CULL_FACE_OPTION::COUNT);
+
+        printf("cull_face_option %d", cull_face_option);
 
         image->Clear(glm::vec3(0));
         depthImage->Clear();
