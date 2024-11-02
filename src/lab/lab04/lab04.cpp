@@ -36,7 +36,45 @@ void Lab04::Initialize()
     image->Init(1280, 720, 3 /* channels */);
     depthImage->Init(1280, 720);
 
-    DrawCube();
+    shapeToDraw = SHAPE::CUBE;
+
+    DrawShape();
+}
+
+void Lab04::DrawShape() {
+    if (shapeToDraw == SHAPE::CUBE) {
+        DrawCube();
+    }
+    if (shapeToDraw == SHAPE::TETRAEDRU) {
+        DrawTetraedru();
+    }
+}
+
+void Lab04::DrawTetraedru() {
+    vector<VertexFormat> vertices
+    {
+        VertexFormat(glm::vec3(-0.5, -0.5, -0.5), glm::vec3(1, 0, 0)),
+        VertexFormat(glm::vec3(0.5, -0.5, -0.5), glm::vec3(0, 1, 0)),
+        VertexFormat(glm::vec3(0, -0.5, 0.5), glm::vec3(0, 0, 1)),
+        VertexFormat(glm::vec3(0, 0.5, 0), glm::vec3(0, 1, 1)),
+    };
+
+    vector<unsigned int> indices
+    {
+        0, 1, 3,    // indices for first triangle
+        1, 2, 3,    // indices for second triangle
+        2, 0, 3,
+        0, 2, 1,
+    };
+
+    {
+        glm::mat4 transformation = glm::mat3(1.0f);
+        transformation *= transform3D::Perspective(glm::radians(60.0f), 16.0f / 9, 0.1f, 100.0f);
+        transformation *= transform3D::View(camera_position, camera_forward, camera_right, camera_up);
+        transformation *= ModelTransformation();
+
+        Rasterize(vertices, indices, transformation, viewport_space, cull_face_option);
+    }
 }
 
 void Lab04::DrawCube()
@@ -85,7 +123,7 @@ glm::mat4 Lab04::ModelTransformation()
 
     transformation *= transform3D::Translate(0, 1, -3);
     transformation *= transform3D::RotateOZ(glm::radians(45.0f));
-    transformation *= transform3D::RotateOY(glm::radians(45.0f));
+    transformation *= transform3D::RotateOY(glm::radians(125.0f));
     transformation *= transform3D::RotateOX(glm::radians(45.0f));
     transformation *= transform3D::Scale(1.25f, 1.25f, 1.25f);
 
@@ -135,7 +173,7 @@ glm::vec3 Lab04::ComputeClipSpacePosition(
     glm::vec4 homogenous_coordinate = transformation * 
         glm::vec4(position.x, position.y, position.z, 1);
 
-    // TODO(student): Ex. 3
+    homogenous_coordinate = homogenous_coordinate / homogenous_coordinate.w;
 
     glm::vec3 clip_space_pos = glm::vec3(homogenous_coordinate);
 
@@ -176,6 +214,12 @@ TRIANGLE_FACE Lab04::DetermineTriangleFace(
     // of the cross product as follows:
     // If the sign is positive, the front face of the triangle is displayed.
     // If the sign is negative, the back face of the triangle is displayed.
+    if (cross_produt.z > 0) {
+        return TRIANGLE_FACE::FRONT;
+    }
+    else if (cross_produt.z < 0) {
+        return TRIANGLE_FACE::BACK;
+    }
 
     return TRIANGLE_FACE::NONE;
 }
@@ -211,7 +255,7 @@ void Lab04::OnInputUpdate(float deltaTime, int mods)
         image->Clear(glm::vec3(0));
         depthImage->Clear();
 
-        DrawCube();
+        DrawShape();
 
         image->UpdateInternalData();
     }
@@ -226,7 +270,29 @@ void Lab04::OnKeyPress(int key, int mods)
         image->Clear(glm::vec3(0));
         depthImage->Clear();
 
-        DrawCube();
+        DrawShape();
+
+        image->UpdateInternalData();
+    }
+
+    if (key == GLFW_KEY_0) {
+        shapeToDraw = SHAPE::CUBE;
+
+        image->Clear(glm::vec3(0));
+        depthImage->Clear();
+
+        DrawShape();
+
+        image->UpdateInternalData();
+    }
+
+    if (key == GLFW_KEY_1) {
+        shapeToDraw = SHAPE::TETRAEDRU;
+
+        image->Clear(glm::vec3(0));
+        depthImage->Clear();
+
+        DrawShape();
 
         image->UpdateInternalData();
     }

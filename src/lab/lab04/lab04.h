@@ -33,7 +33,13 @@ namespace lab
         void Initialize() override;
 
      private:
+        enum SHAPE {
+            CUBE = 0,
+            TETRAEDRU = 1
+        };
         void DrawCube();
+        void DrawTetraedru();
+        void DrawShape();
         glm::mat4 ModelTransformation();
         void Rasterize(
             const std::vector<VertexFormat> &vertices,
@@ -59,5 +65,6 @@ namespace lab
         glm::vec3 camera_position;
         glm::vec3 camera_forward, camera_right, camera_up;
         CULL_FACE_OPTION cull_face_option;
+        SHAPE shapeToDraw;
     };
 }   // namespace lab
