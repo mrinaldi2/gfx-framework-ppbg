@@ -36,9 +36,26 @@ namespace lab
         void RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 & modelMatrix,
             const glm::mat4 &viewMatrix, const glm::mat4 &projectionMatrix);
 
+        void TranslateYCubeAnimator(float deltaTime);
+        void TranslateYCubeAnimatorState();
+
+        void ScaleCubeAnimator(float deltaTime);
+        void ScaleCubeAnimatorState();
+
+        void RotateCubeAnimator(float deltaTime);
      protected:
         transform2D::ViewportSpace viewport_space;
         glm::vec3 color;
         GLenum cullFace;
+
+        float TranslateCubeY = 0.5f;
+        bool TranslateYCubeUpState = true;
+
+        float ScaleCube = 0.5f;
+        bool ScaleCubeGrowState = true;
+
+        float RotateCubeOY = 0.0f;
+
+        glm::vec3 transformCube = glm::vec3(0.0f);
     };
 }   // namespace lab
