@@ -267,7 +267,7 @@ void Lab04::OnKeyPress(int key, int mods)
         cull_face_option = (CULL_FACE_OPTION) 
             ((cull_face_option + 1) % CULL_FACE_OPTION::COUNT);
 
-        printf("cull_face_option %d", cull_face_option);
+  
 
         image->Clear(glm::vec3(0));
         depthImage->Clear();

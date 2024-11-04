@@ -162,6 +162,24 @@ void Lab05::TranslateYCubeAnimator(float deltaTime) {
     }
 }
 
+void Lab05::TranslateXCubeAnimatorState() {
+    if (TranslateCubeX > 1.50f) {
+        TranslateXCubeUpState = false;
+    }
+    else if (TranslateCubeX < -1.5f) {
+        TranslateXCubeUpState = true;
+    }
+}
+
+void Lab05::TranslateXCubeAnimator(float deltaTime) {
+    if (TranslateXCubeUpState) {
+        TranslateCubeX += 0.5f * deltaTime;
+    }
+    else {
+        TranslateCubeX -= 0.5f * deltaTime;
+    }
+}
+
 void Lab05::ScaleCubeAnimatorState() {
     if (ScaleCube > 2.0f) {
         ScaleCubeGrowState = false;
@@ -184,8 +202,80 @@ void Lab05::RotateCubeAnimator(float deltaTime) {
 }
 
 
-void Lab05::Update(float deltaTimeSeconds)
+void Lab05::DrawSolarSystem(float deltaTimeSeconds) {
+    glm::ivec2 resolution = window->GetResolution();
+
+    // TODO(student): Set the screen cleaning color. Use the 'color' attribute.
+    glClearColor(color.r, color.g, color.b, 1);
+
+    // Clears the color buffer (using the previously set color) and depth buffer
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    static auto camera = new gfxc::Camera();
+
+    TranslateXCubeAnimatorState();
+    TranslateXCubeAnimator(deltaTimeSeconds);
+    timePassed += deltaTimeSeconds;
+    earth = glm::vec3(3.25f * cos(timePassed * 0.75f), 3.25f * sin(timePassed * 0.75f), 0.0f);
+    moon = glm::vec3(cos(timePassed), sin(timePassed), 0.0f);
+
+    viewport_space = transform2D::ViewportSpace(0, 0, resolution.x, resolution.y);
+    DrawSolarObjects(GetSceneCamera(), viewport_space);
+}
+
+void Lab05::DrawSolarObjects(gfxc::Camera* camera, const transform2D::ViewportSpace& viewport_space)
 {
+    glm::mat4 view = transform3D::View(
+        camera->m_transform->GetWorldPosition(),
+        camera->m_transform->GetLocalOZVector(),
+        camera->m_transform->GetLocalOXVector(),
+        camera->m_transform->GetLocalOYVector()
+    );
+
+    glm::mat4 projection = transform3D::Perspective(
+        glm::radians(60.0f), (float)viewport_space.width / viewport_space.height, 0.1f, 100.0f
+    );
+
+    // TODO(student): Enable face culling
+    glEnable(GL_CULL_FACE);
+
+    // TODO(student): Set face custom culling. Use the `cullFace` variable.
+    glCullFace(cullFace);
+
+    // TODO(student): Set the position and size of the view port based on the
+    // information received from the 'viewport_space' parameter.
+    glViewport(viewport_space.x, viewport_space.y, viewport_space.width, viewport_space.height);
+
+    glm::mat4 model = glm::mat4(1);
+    model = glm::mat4(1);
+    model *= transform3D::Translate(glm::vec3(TranslateCubeX, 0, 0));
+    model *= transform3D::Translate(glm::vec3(0, 0.5f, 0));
+    RenderMesh(meshes["cube"], shaders["VertexColor"], model, view, projection);
+
+    model = glm::mat4(1);
+    model *= transform3D::Translate(glm::vec3(TranslateCubeX, 0, 0));
+    model *= transform3D::Translate(glm::vec3(0, 0.5f, 0));
+    model *= transform3D::Translate(earth);
+    model *= transform3D::Scale(glm::vec3(0.75f));
+    RenderMesh(meshes["cube"], shaders["VertexColor"], model, view, projection);
+
+    model = glm::mat4(1);
+    model *= transform3D::Translate(glm::vec3(TranslateCubeX, 0, 0));
+    model *= transform3D::Translate(glm::vec3(0, 0.5f, 0));
+    model *= transform3D::Translate(earth);
+    model *= transform3D::Scale(glm::vec3(0.75f));
+    model *= transform3D::Translate(moon);
+    model *= transform3D::Scale(glm::vec3(0.25f));
+    RenderMesh(meshes["cube"], shaders["VertexColor"], model, view, projection);
+
+   
+    // TODO(student): Disable face culling
+    glDisable(GL_CULL_FACE);
+
+    DrawCoordinateSystem(view, projection);
+}
+
+void Lab05::Draw4Views(float deltaTimeSeconds) {
     glm::ivec2 resolution = window->GetResolution();
 
     // TODO(student): Set the screen cleaning color. Use the 'color' attribute.
@@ -206,20 +296,32 @@ void Lab05::Update(float deltaTimeSeconds)
     viewport_space = transform2D::ViewportSpace(0, 0, resolution.x * 0.75f, resolution.y * 0.50f);
     DrawObjects(GetSceneCamera(), viewport_space);
 
-    camera->SetPositionAndRotation(glm::vec3(0, 1, 4), glm::quatLookAt(glm::normalize(glm::vec3(0, -3, 3)), glm::vec3(0, 1, 0)));
+    camera->SetPositionAndRotation(glm::vec3(0, 3, -3), glm::quatLookAt(glm::normalize(glm::vec3(0, -3, 3)), glm::vec3(0, 1, 0)));
     viewport_space = transform2D::ViewportSpace(resolution.x * 0.75f, 0, resolution.x * 0.25f, resolution.y * 0.75f);
     DrawObjects(camera, viewport_space);
-    //viewport_space = transform2D::ViewportSpace(0, resolution.y * 0.50f, resolution.x * 0.75f, resolution.y * 0.50f);
-    
+
 
     camera->SetPositionAndRotation(glm::vec3(3, 3, 3), glm::quatLookAt(glm::normalize(glm::vec3(-3, -3, -3)), glm::vec3(0, 1, 0)));
     viewport_space = transform2D::ViewportSpace(0, resolution.y * 0.50f, resolution.x * 0.75f, resolution.y * 0.50f);
     DrawObjects(camera, viewport_space);
-   
+
 
     camera->SetPositionAndRotation(glm::vec3(-3, 3, 3), glm::quatLookAt(glm::normalize(glm::vec3(3, -3, -3)), glm::vec3(0, 1, 0)));
     viewport_space = transform2D::ViewportSpace(resolution.x * 0.75f, resolution.y * 0.75f, resolution.x * 0.25f, resolution.y * 0.25f);
     DrawObjects(camera, viewport_space);
+}
+
+void Lab05::Update(float deltaTimeSeconds)
+{
+    if (sceneToDraw == SCENE::DRAW_FOUR_VIEWS) {
+        Draw4Views(deltaTimeSeconds);
+        return;
+    }
+
+    if (sceneToDraw == SCENE::DRAW_SOLAR_SYSTEM) {
+        DrawSolarSystem(deltaTimeSeconds);
+        return;
+    }
 }
 
 
@@ -367,6 +469,11 @@ void Lab05::OnKeyPress(int key, int mods)
 
     if (key == GLFW_KEY_F) {
         cullFace = (cullFace == GL_BACK) ? GL_FRONT : GL_BACK;
+    }
+
+    if (key == GLFW_KEY_M) {
+        sceneToDraw = (SCENE)
+            ((sceneToDraw + 1) % SCENE::COUNT);
     }
 }
 

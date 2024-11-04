@@ -85,12 +85,16 @@ namespace transform3D
         const glm::vec3& up)
     {
         return glm::transpose(glm::mat4(
-            right.x, right.y, right.z, -position.x,
-            up.x, up.y, up.z, -position.y,
-            forward.x, forward.y, forward.z, -position.z,
+            right.x, right.y, right.z, 0,
+            up.x, up.y, up.z, 0,
+            forward.x, forward.y, forward.z, 0,
+            0, 0, 0, 1
+        )) * glm::transpose(glm::mat4(
+            1, 0, 0, -position.x,
+            0, 1, 0, -position.y,
+            0, 0, 1, -position.z,
             0, 0, 0, 1
         ));
-        return glm::mat4(1);
     }
 
 }   // namespace transform3D
