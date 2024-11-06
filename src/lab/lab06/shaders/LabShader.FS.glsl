@@ -2,14 +2,17 @@
 
 // Input
 // TODO(student): Get values from vertex shader
+in vec3 color;
+
+uniform float Time;
 
 // Output
 layout(location = 0) out vec4 out_color;
 
-
 void main()
 {
     // TODO(student): Write pixel out color
-    out_color = vec4(1);
+    vec3 f_color = vec3(color.r, color.g * abs(sin(Time)) * 0.8, color.b * abs(cos(Time)) * 0.4);
+    out_color = vec4(f_color, 1);
 
 }
