@@ -76,6 +76,11 @@ void Lab06::Init()
         "src/lab/lab06/shaders/LastTask.VS.glsl",
         "src/lab/lab06/shaders/LastTask.FS.glsl"
     );
+
+    CreateShader("LabBonus",
+        "src/lab/lab06/shaders/LabBonus.VS.glsl",
+        "src/lab/lab06/shaders/LabBonus.FS.glsl"
+    );
 }
 
 void Lab06::CreateShader(const char* name, const char* vertex_shader_path, const char* fragment_shader_path)
@@ -200,7 +205,7 @@ void Lab06::Update(float deltaTimeSeconds)
         model *= transform3D::Translate(glm::vec3(-2, 0.5f, 0));
         model *= transform3D::RotateOX(glm::radians(60.0f));
         model *= transform3D::RotateOY(glm::radians(60.0f));
-        RenderMesh(meshes["sphere"], shaders["LabShader"], model, GetSceneCamera(), viewport_space);
+        RenderMesh(meshes["sphere"], shaders["LabBonus"], model, GetSceneCamera(), viewport_space);
     }
 
     {
