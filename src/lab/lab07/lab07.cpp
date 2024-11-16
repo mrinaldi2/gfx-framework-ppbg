@@ -115,6 +115,12 @@ void Lab07::Update(float deltaTimeSeconds)
 
     {
         glm::mat4 model = glm::mat4(1);
+        model = glm::translate(model, glm::vec3(-2, 0.5f, 2));
+        RenderSimpleMesh(meshes["box"], shaders["LabShader"], model, glm::vec3(1, 1, 0));
+    }
+
+    {
+        glm::mat4 model = glm::mat4(1);
         model = glm::translate(model, glm::vec3(0, 1, 0));
         RenderSimpleMesh(meshes["sphere"], shaders["LabShader"], model, glm::vec3(1, 1, 0));
     }
@@ -201,14 +207,59 @@ void Lab07::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & model
     // spot light sources) in attributes of uniform type. Use the attributes
     // defined in "lab07.h". Send 10 entities of each.
 
+    /*
+    uniform float point_lights_count;
+    uniform vec3 point_light_positions[10];
+    uniform vec3 point_light_colors[10];
+    uniform vec3 spot_light_positions[10];
+    uniform vec3 spot_light_colors[10];
+    uniform vec3 spot_light_directions[10];
+    uniform float spot_light_angles[10];    
+    uniform vec3 eye_position;
+    */
+
+	GLint points_lights_count_loc = glGetUniformLocation(shader->program, "point_lights_count");
+	glUniform1f(points_lights_count_loc, 10);
+
+	GLint points_lights_positions_loc = glGetUniformLocation(shader->program, "point_light_positions");
+	glUniform3fv(points_lights_positions_loc, 10, glm::value_ptr(point_light_positions[0]));
+
+    GLint points_lights_colors_loc = glGetUniformLocation(shader->program, "point_light_colors");
+    glUniform3fv(points_lights_colors_loc, 10, glm::value_ptr(point_light_colors[0]));
+
+    GLint spot_light_positions_loc = glGetUniformLocation(shader->program, "spot_light_positions");
+    glUniform3fv(spot_light_positions_loc, 10, glm::value_ptr(spot_light_positions[0]));
+
+    GLint spot_light_colors_loc = glGetUniformLocation(shader->program, "spot_light_colors");
+    glUniform3fv(spot_light_colors_loc, 10, glm::value_ptr(spot_light_colors[0]));
+
+    GLint spot_light_directions_loc = glGetUniformLocation(shader->program, "spot_light_directions");
+    glUniform3fv(spot_light_directions_loc, 10, glm::value_ptr(spot_light_directions[0]));
+
+    GLint spot_light_angles_loc = glGetUniformLocation(shader->program, "spot_light_angles");
+    glUniform1fv(spot_light_angles_loc, 10, spot_light_angles);
+
     glm::vec3 eye_position = GetSceneCamera()->m_transform->GetWorldPosition();
     // TODO(student): Set eye position (camera position) uniform
+	GLint eye_position_loc = glGetUniformLocation(shader->program, "eye_position");
+	glUniform3fv(eye_position_loc, 1, glm::value_ptr(eye_position));
 
     glm::vec3 material_ka = object_color;
     glm::vec3 material_kd = object_color;
     glm::vec3 material_ks = object_color;
     int material_shininess = 30;
     // TODO(student): Set material property uniforms (shininess, ka, kd, ks)
+	GLint material_ka_loc = glGetUniformLocation(shader->program, "material_ka");
+	glUniform3fv(material_ka_loc, 1, glm::value_ptr(material_ka));
+
+	GLint material_kd_loc = glGetUniformLocation(shader->program, "material_kd");
+	glUniform3fv(material_kd_loc, 1, glm::value_ptr(material_kd));
+
+	GLint material_ks_loc = glGetUniformLocation(shader->program, "material_ks");
+	glUniform3fv(material_ks_loc, 1, glm::value_ptr(material_ks));
+
+	GLint material_shininess_loc = glGetUniformLocation(shader->program, "material_shininess");
+	glUniform1i(material_shininess_loc, material_shininess);
 
     // Send the model matrix uniform
     GLint loc_model_matrix = glGetUniformLocation(shader->program, "Model");
@@ -267,12 +318,31 @@ void Lab07::OnInputUpdate(float deltaTime, int mods)
     }
 
     {
+        const float speed = 2;
         glm::vec3 &light_direction = spot_light_directions[9];
         float &angle = spot_light_angles[9];
         // TODO(student): Change the lighting direction and angle of the spot
         // light source from the keyboard. From the keys, implement the possibility
         // of rotating the lighting direction relative to the OX and OZ axes, in both
         // directions and the possibility of increasing and decreasing the angle.
+        if (window->KeyHold(GLFW_KEY_UP)) {
+			glm::mat4 model = glm::rotate(glm::mat4(1), deltaTime * glm::radians(20.0f), glm::vec3(1, 0, 0));
+			light_direction = glm::vec3(model * glm::vec4(light_direction, 1));
+        }
+        if (window->KeyHold(GLFW_KEY_DOWN)) {
+            glm::mat4 model = glm::rotate(glm::mat4(1), deltaTime * glm::radians(-20.0f), glm::vec3(1, 0, 0));
+            light_direction = glm::vec3(model * glm::vec4(light_direction, 1));
+        }
+        if (window->KeyHold(GLFW_KEY_LEFT)) {
+            glm::mat4 model = glm::rotate(glm::mat4(1), deltaTime * glm::radians(-20.0f), glm::vec3(0, 0, 1));
+            light_direction = glm::vec3(model * glm::vec4(light_direction, 1));
+        }
+        if (window->KeyHold(GLFW_KEY_RIGHT)) {
+            glm::mat4 model = glm::rotate(glm::mat4(1), deltaTime * glm::radians(20.0f), glm::vec3(0, 0, 1));
+            light_direction = glm::vec3(model * glm::vec4(light_direction, 1));
+        }
+		if (window->KeyHold(GLFW_KEY_6)) angle += deltaTime * glm::radians(10.0f);
+        if (window->KeyHold(GLFW_KEY_4)) angle -= deltaTime * glm::radians(10.0f);
 
     }
 }

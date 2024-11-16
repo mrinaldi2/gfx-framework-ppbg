@@ -25,18 +25,23 @@ layout(location = 0) out vec4 out_color;
 vec3 ComputePhongIllumination(vec3 light_position)
 {
     // TODO(student): Compute the diffuse component of the Lambert illumination model
-    vec3 diffuse_component = vec3(0);
+    vec3 L = normalize(light_position - world_position);
+    vec3 N = normalize(world_normal);
+    vec3 V = normalize(eye_position - world_position);
+    vec3 R = reflect(-L, N);
+    vec3 diffuse_component = material_kd * max(dot(N, L), 0);
 
     // TODO(student): Compute the specular component of the Phong illumination model
-    vec3 specular_component = vec3(0);
+    float receive_light = step(0, dot(N, L));
+    vec3 specular_component = material_ks * receive_light * pow(max(dot(V, R), 0), material_shininess);
 
     if (length(diffuse_component) > 0)
     {
-
+        //diffuse_component = normalize(diffuse_component);
     }
 
     // TODO(student): Compute the final illumination as the sum of the diffuse and specular components
-    vec3 illumination = vec3(0);
+    vec3 illumination = diffuse_component + specular_component;
 
     return illumination;
 }
@@ -45,7 +50,7 @@ float ComputeDistanceAttenuation(vec3 light_position, vec3 point_position)
 {
     // TODO(student): Compute the light attenuation factor based on the distance
     // between the position of the illuminated point and the position of the light source.
-    return 0;
+    return 1.0f / (pow(distance(light_position, point_position),2)  + 1.0f);
 }
 
 vec3 ComputePointLightSourcesIllumination()
@@ -62,7 +67,7 @@ vec3 ComputePointLightSourcesIllumination()
         // TODO(student): Add to the illumination of all light sources the result
         // of multiplying the illumination of the light source from the current iteration
         // with the attenuation of the illumination and the color of the illumination.
-        lights_illumination += vec3(0);
+        lights_illumination += light_illumination * light_color * illumination_attenuation;
     }
 
     return lights_illumination;
@@ -87,13 +92,14 @@ vec3 ComputeSpotLightSourcesIllumination()
             float illumination_attenuation = ComputeDistanceAttenuation(light_position, world_position);
 
             // TODO(student): Compute the attenuation factor specific to the spot light source
-            float quadratic_spot_light_att_factor = 0;
+            float spot_linear_att_factor = (cos_theta_angle - cos_phi_angle) / (1.0f - cos_phi_angle);
+            float quadratic_spot_light_att_factor = pow(spot_linear_att_factor, 2);
 
             // TODO(student): Add to the illumination of all light sources the result
             // of multiplying the illumination of the light source from the current iteration
             // with the attenuation of the illumination, the attenuation factor specific
             // to the light spot source and the color of the illumination.
-            lights_illumination += vec3(0);
+            lights_illumination += light_illumination * light_color * illumination_attenuation * quadratic_spot_light_att_factor;
         }
     }
 
@@ -105,7 +111,7 @@ vec3 ComputeAmbientComponent()
     vec3 global_ambient_color = vec3(0.25f);
 
     // TODO(student): Compute the ambient component of global illumination
-    vec3 ambient_component = vec3(0);
+    vec3 ambient_component = material_ka * global_ambient_color;
 
     return ambient_component;
 }
