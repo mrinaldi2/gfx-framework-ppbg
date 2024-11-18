@@ -68,6 +68,15 @@ void Lab07::Init()
         shaders[shader->GetName()] = shader;
     }
 
+    // Create a shader program for drawing face polygon with the color of the normal and circle at the center of each face
+    {
+        Shader* shader = new Shader("LabBonusShader");
+        shader->AddShader(PATH_JOIN(window->props.selfDir, "src/lab", "lab07", "shaders", "VertexShader.glsl"), GL_VERTEX_SHADER);
+        shader->AddShader(PATH_JOIN(window->props.selfDir, "src/lab", "lab07", "shaders", "FragmentBonusShader.glsl"), GL_FRAGMENT_SHADER);
+        shader->CreateAndLink();
+        shaders[shader->GetName()] = shader;
+    }
+
     // Light & material properties
     {
         point_light_positions[9] = glm::vec3(0, 1, 1);
@@ -116,7 +125,7 @@ void Lab07::Update(float deltaTimeSeconds)
     {
         glm::mat4 model = glm::mat4(1);
         model = glm::translate(model, glm::vec3(-2, 0.5f, 2));
-        RenderSimpleMesh(meshes["box"], shaders["LabShader"], model, glm::vec3(1, 1, 0));
+        RenderSimpleMesh(meshes["box"], shaders["LabBonusShader"], model, glm::vec3(1, 1, 0));
     }
 
     {
@@ -217,6 +226,9 @@ void Lab07::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & model
     uniform float spot_light_angles[10];    
     uniform vec3 eye_position;
     */
+
+	GLint time_loc = glGetUniformLocation(shader->program, "Time");
+	glUniform1f(time_loc, Engine::GetElapsedTime());
 
 	GLint points_lights_count_loc = glGetUniformLocation(shader->program, "point_lights_count");
 	glUniform1f(points_lights_count_loc, 10);
