@@ -15,9 +15,11 @@ layout(location = 0) out vec4 out_color;
 void main()
 {
     // TODO(student): Calculate the out_color using the texture() function.
-
+    out_color = texture(texture_1, texture_coord);
     // TODO(student): Use the "discard" directive to terminate execution
     // based on the value of the alpha channel
-
-    out_color = vec4(1);
+    if (out_color.a < 0.5)
+    {
+        discard;
+    }
 }

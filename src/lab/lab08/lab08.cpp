@@ -92,10 +92,10 @@ void Lab08::Init()
         vector<glm::vec2> textureCoords
         {
             // TODO(student): Specify the texture coordinates for the square
-            glm::vec2(0.0f, 0.0f),  // top right
-            glm::vec2(0.0f, 0.0f),  // bottom right
+            glm::vec2(1.0f, -1.0f),  // top right
+            glm::vec2(1.0f, 0.0f),  // bottom right
             glm::vec2(0.0f, 0.0f),  // bottom left
-            glm::vec2(0.0f, 0.0f)   // top left
+            glm::vec2(0.0f, -1.0f)   // top left
         };
 
         vector<VertexFormat> vertices
@@ -136,11 +136,15 @@ Texture2D *Lab08::CreateTexture(unsigned int width, unsigned int height,
     unsigned int size = width * height * channels;
 
     // TODO(student): Generate and bind the new texture ID
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
 
     if (GLEW_EXT_texture_filter_anisotropic) {
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
     }
     // TODO(student): Set the texture parameters (MIN_FILTER and MAG_FILTER) using glTexParameteri
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
     CheckOpenGLError();
@@ -153,8 +157,26 @@ Texture2D *Lab08::CreateTexture(unsigned int width, unsigned int height,
     //   - 2 color channels - GL_RG
     //   - 3 color channels - GL_RGB
     //   - 4 color channels - GL_RGBA
+    GLuint format = 0;
+    switch (channels)
+    {
+	case 2:
+		format = GL_RG;
+		break;
+	case 3:
+		format = GL_RGB;
+		break;
+	case 4:
+		format = GL_RGBA;
+		break;
+    default:
+        format = GL_RED;
+        break;
+    }
+	glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 
     // TODO(student): Generate texture mip-maps
+	glGenerateMipmap(GL_TEXTURE_2D);
 
     CheckOpenGLError();
 
@@ -278,7 +300,9 @@ void Lab08::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelM
         // - activate texture location 0
         // - bind the texture1 ID
         // - send theuniform value
-
+        glActiveTexture(GL_TEXTURE0);
+		texture1->BindToTextureUnit(GL_TEXTURE0);
+        glUniform1i(glGetUniformLocation(shader->program, "texture_1"), 0);
     }
 
     if (texture2)
@@ -287,7 +311,9 @@ void Lab08::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelM
         // - activate texture location 1
         // - bind the texture2 ID
         // - send the uniform value
-
+        glActiveTexture(GL_TEXTURE1);
+        texture1->BindToTextureUnit(GL_TEXTURE1);
+        glUniform1i(glGetUniformLocation(shader->program, "texture_2"), 1);
     }
 
     // Draw the object
