@@ -119,6 +119,8 @@ void Lab08::Init()
 
     // TODO(student): Load other shaders
     LoadShader("LabShader");
+    LoadShader("LabShaderTwoTex");
+    LoadShader("LabShaderRotation");
 }
 
 Texture2D* Lab08::LoadTexture(const char* imagePath)
@@ -199,6 +201,20 @@ Texture2D *Lab08::CreateStripedTexture()
     // TODO(student): Generate the information for a striped image,
     // where all the pixels on the same line have the same color.
     // The color of the pixels of a line is chosen randomly.
+	for (unsigned int i = 0; i < height; i++)
+	{
+		unsigned char r = rand() % 256;
+		unsigned char g = rand() % 256;
+		unsigned char b = rand() % 256;
+
+		for (unsigned int j = 0; j < width; j++)
+		{
+			unsigned int index = (i * width + j) * channels;
+			data[index] = r;
+			data[index + 1] = g;
+			data[index + 2] = b;
+		}
+	}
 
 
     return CreateTexture(width, height, channels, data);
@@ -222,7 +238,7 @@ void Lab08::Update(float deltaTimeSeconds)
         glm::mat4 modelMatrix = glm::mat4(1);
         modelMatrix = glm::translate(modelMatrix, glm::vec3(1, 1, -3));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(2));
-        RenderSimpleMesh(meshes["sphere"], shaders["LabShader"], modelMatrix, mapTextures["earth"]);
+        RenderSimpleMesh(meshes["sphere"], shaders["LabShaderRotation"], modelMatrix, mapTextures["earth"]);
     }
 
     {
@@ -230,7 +246,7 @@ void Lab08::Update(float deltaTimeSeconds)
         modelMatrix = glm::translate(modelMatrix, glm::vec3(2, 0.5f, 0));
         modelMatrix = glm::rotate(modelMatrix, RADIANS(60.0f), glm::vec3(1, 0, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.75f));
-        RenderSimpleMesh(meshes["box"], shaders["LabShader"], modelMatrix, mapTextures["crate"], mapTextures["striped"]);
+        RenderSimpleMesh(meshes["box"], shaders["LabShaderTwoTex"], modelMatrix, mapTextures["crate"], mapTextures["striped"]);
     }
 
     {
@@ -293,6 +309,7 @@ void Lab08::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelM
     glUniformMatrix4fv(loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 
     // TODO(student): Set any other shader uniforms that you need
+	glUniform1f(glGetUniformLocation(shader->program, "time"), Engine::GetElapsedTime());
 
     if (texture1)
     {
@@ -312,7 +329,7 @@ void Lab08::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelM
         // - bind the texture2 ID
         // - send the uniform value
         glActiveTexture(GL_TEXTURE1);
-        texture1->BindToTextureUnit(GL_TEXTURE1);
+        texture2->BindToTextureUnit(GL_TEXTURE1);
         glUniform1i(glGetUniformLocation(shader->program, "texture_2"), 1);
     }
 
