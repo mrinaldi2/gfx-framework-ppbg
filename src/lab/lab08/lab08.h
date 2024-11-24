@@ -23,7 +23,7 @@ namespace lab
         void FrameEnd() override;
 
         Texture2D *CreateTexture(unsigned int width, unsigned int height, unsigned int channels, unsigned char *data);
-        void RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelMatrix, Texture2D *texture1 = NULL, Texture2D *texture2 = NULL);
+        void RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelMatrix, Texture2D *texture1 = NULL, Texture2D *texture2 = NULL, Texture2D * texture3 = NULL, Texture2D * texture4 = NULL);
         Texture2D *CreateStripedTexture();
 
         void OnInputUpdate(float deltaTime, int mods) override;

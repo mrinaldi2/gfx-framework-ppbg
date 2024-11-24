@@ -59,6 +59,16 @@ void Lab08::Init()
     }
 
     {
+        Texture2D* texture = LoadTexture("src\\lab\\lab08\\images\\snow.jpg");
+        mapTextures["snow"] = texture;
+    }
+
+    {
+        Texture2D* texture = LoadTexture("src\\lab\\lab08\\images\\water.jpg");
+        mapTextures["water"] = texture;
+    }
+
+    {
         mapTextures["striped"] = CreateStripedTexture();
     }
 
@@ -121,6 +131,8 @@ void Lab08::Init()
     LoadShader("LabShader");
     LoadShader("LabShaderTwoTex");
     LoadShader("LabShaderRotation");
+	LoadShader("LabShaderHeight");
+	LoadShader("LabShaderHeightSnowWater");
 }
 
 Texture2D* Lab08::LoadTexture(const char* imagePath)
@@ -275,7 +287,14 @@ void Lab08::Update(float deltaTimeSeconds)
         glm::mat4 modelMatrix = glm::mat4(1);
         modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0.1, -15));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
-        RenderSimpleMesh(meshes["plane"], shaders["LabShader"], modelMatrix, mapTextures["ground"], mapTextures["noise"]);
+        RenderSimpleMesh(meshes["plane"], shaders["LabShaderHeight"], modelMatrix, mapTextures["ground"], mapTextures["noise"]);
+    }
+
+    {
+        glm::mat4 modelMatrix = glm::mat4(1);
+        modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0.1, 15));
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.3f));
+        RenderSimpleMesh(meshes["plane"], shaders["LabShaderHeightSnowWater"], modelMatrix, mapTextures["ground"], mapTextures["noise"], mapTextures["water"], mapTextures["snow"]);
     }
 }
 
@@ -286,7 +305,7 @@ void Lab08::FrameEnd()
 }
 
 
-void Lab08::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelMatrix, Texture2D *texture1, Texture2D *texture2)
+void Lab08::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelMatrix, Texture2D *texture1, Texture2D *texture2, Texture2D* texture3, Texture2D* texture4)
 {
     if (!mesh || !shader || !shader->GetProgramID())
         return;
@@ -331,6 +350,28 @@ void Lab08::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelM
         glActiveTexture(GL_TEXTURE1);
         texture2->BindToTextureUnit(GL_TEXTURE1);
         glUniform1i(glGetUniformLocation(shader->program, "texture_2"), 1);
+    }
+
+    if (texture3)
+    {
+        // TODO(student): Do these:
+        // - activate texture location 1
+        // - bind the texture3 ID
+        // - send the uniform value
+        glActiveTexture(GL_TEXTURE2);
+        texture3->BindToTextureUnit(GL_TEXTURE2);
+        glUniform1i(glGetUniformLocation(shader->program, "texture_3"), 2);
+    }
+
+    if (texture4)
+    {
+        // TODO(student): Do these:
+        // - activate texture location 1
+        // - bind the texture4 ID
+        // - send the uniform value
+        glActiveTexture(GL_TEXTURE3);
+        texture4->BindToTextureUnit(GL_TEXTURE3);
+        glUniform1i(glGetUniformLocation(shader->program, "texture_4"), 3);
     }
 
     // Draw the object

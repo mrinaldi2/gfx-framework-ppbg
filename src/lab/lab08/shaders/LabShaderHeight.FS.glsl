@@ -7,7 +7,7 @@ in vec2 texture_coord;
 uniform sampler2D texture_1;
 uniform sampler2D texture_2;
 // TODO(student): Declare various other uniforms
-uniform float time;
+
 // Output
 layout(location = 0) out vec4 out_color;
 
@@ -15,11 +15,11 @@ layout(location = 0) out vec4 out_color;
 void main()
 {
     // TODO(student): Calculate the out_color using the texture() function.
+    vec4 first_color = texture(texture_1, texture_coord);
+    vec4 second_color = texture(texture_2, texture_coord);
+    second_color = vec4(second_color.rrr, 1.0);
 
-    float timeOffset = fract(time * 0.1); // Smooth cyclical movement
-    vec2 uv = texture_coord + vec2(-timeOffset, 0.0);
-
-    out_color = texture(texture_1, uv);
+    out_color = mix(first_color, second_color, 0.6f);
     // TODO(student): Use the "discard" directive to terminate execution
     // based on the value of the alpha channel
     if (out_color.a < 0.5)
