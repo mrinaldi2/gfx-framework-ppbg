@@ -74,7 +74,7 @@ void Lab10::FrameStart()
 
 void Lab10::Update(float deltaTimeSeconds)
 {
-    {
+    /* {
         glm::mat4 modelMatrix = glm::mat4(1);
         modelMatrix = glm::translate(modelMatrix, glm::vec3(-3, 0, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.01));
@@ -100,6 +100,13 @@ void Lab10::Update(float deltaTimeSeconds)
         modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 1, 1));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5));
         RenderSimpleMesh(meshes["triangle"], shaders["LabShader"], modelMatrix);
+    }*/
+
+    {
+        glm::mat4 modelMatrix = glm::mat4(1);
+        modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 1, 1));
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5));
+        RenderSimpleMesh(meshes["triangle"], shaders["Triangle"], modelMatrix);
     }
 }
 

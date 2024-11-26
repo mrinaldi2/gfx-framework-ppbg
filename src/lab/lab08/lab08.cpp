@@ -329,6 +329,7 @@ void Lab08::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelM
 
     // TODO(student): Set any other shader uniforms that you need
 	glUniform1f(glGetUniformLocation(shader->program, "time"), Engine::GetElapsedTime());
+	glUniform1f(glGetUniformLocation(shader->program, "speed"), speed);
 
     if (texture1)
     {
@@ -407,6 +408,14 @@ void Lab08::OnInputUpdate(float deltaTime, int mods)
 
 void Lab08::OnKeyPress(int key, int mods)
 {
+	if (key == GLFW_KEY_M)
+	{
+		speed += 0.1f;
+	}
+	else if (key == GLFW_KEY_N)
+	{
+		speed -= 0.1f;
+	}
     // Add key press event
 }
 

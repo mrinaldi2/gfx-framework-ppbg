@@ -39,5 +39,6 @@ namespace lab
         void LoadShader(const std::string& name);
 
         std::unordered_map<std::string, Texture2D *> mapTextures;
+        float speed = 0.0f;
     };
 }   // namespace lab

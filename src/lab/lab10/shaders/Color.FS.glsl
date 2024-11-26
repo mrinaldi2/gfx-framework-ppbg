@@ -10,5 +10,5 @@ void main()
 {
 	// TODO(student): Use the color information
 	// received from the geometry shader
-    out_color = vec4(1, 0, 0, 0);
+    out_color = vec4(color, 0);
 }

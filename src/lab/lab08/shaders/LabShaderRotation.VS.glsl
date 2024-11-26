@@ -12,12 +12,13 @@ uniform mat4 View;
 uniform mat4 Projection;
 
 // Output
+out vec3 normal;
 out vec2 texture_coord;
-
 
 void main()
 {
     // TODO(student): Pass v_texture_coord as output to fragment shader
-	texture_coord = v_texture_coord;
+    normal = v_normal;
+    texture_coord = v_texture_coord;
     gl_Position = Projection * View * Model * vec4(v_position, 1.0);
 }
