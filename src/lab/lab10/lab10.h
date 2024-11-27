@@ -33,5 +33,7 @@ namespace lab
 
      private:
         std::unordered_map<std::string, Texture2D*> mapTextures;
+		float elapsedTime = 0.0f;
+		float explosionTime = 1.8f;
     };
 }   // namespace lab

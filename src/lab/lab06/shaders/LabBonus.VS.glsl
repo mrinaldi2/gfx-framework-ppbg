@@ -39,9 +39,8 @@ void main()
     // TODO(student): Send output to fragment shader
     color = v_position;
     vec3 f_position = v_position + v_normal * 0.2;
-    vec3 worldNormal = normalize(f_position);
     float scale = mix(0.0, 0.8, improvedRandom(f_position));
 
-    vec3 scaledPosition = f_position + worldNormal * getSinBasedValue(f_position, Time, scale);
+    vec3 scaledPosition = f_position + v_normal * getSinBasedValue(f_position, Time, scale);
     gl_Position = Projection * View * Model * vec4(scaledPosition, 1.0);
 }
