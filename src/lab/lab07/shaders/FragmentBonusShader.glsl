@@ -117,11 +117,7 @@ vec3 ComputeAmbientComponent()
     float radius = 0.1 * sin(Time) + 0.15;
     float inCircle = step(radius, distance(texture_coord, ccenter));
     // TODO(student): Compute the ambient component of global illumination
-    vec3 finalColor = material_ka;
-    if (inCircle == 0)
-	{
-		finalColor = vec3(1.0, 0.0, 0.0);
-	}
+    vec3 finalColor = inCircle == 0 ? vec3(1.0, 0.0, 0.0) : material_ka;
     vec3 ambient_component = finalColor * global_ambient_color;
 
     return ambient_component;

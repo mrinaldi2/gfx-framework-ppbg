@@ -47,8 +47,4 @@ void main()
 
 	EndPrimitive();
 
-
-	
-	
-
 }

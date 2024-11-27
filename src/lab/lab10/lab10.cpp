@@ -111,19 +111,19 @@ void Lab10::Update(float deltaTimeSeconds)
         RenderSimpleMesh(meshes["archer"], shaders["ExplosionGravity"], modelMatrix, mapTextures["archer"]);
     }
 
-    {
+   /* {
         glm::mat4 modelMatrix = glm::mat4(1);
         modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 1, 1));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5));
         RenderSimpleMesh(meshes["triangle"], shaders["LabShader"], modelMatrix);
-    }
+    }*/
 
-    /* {
+    {
         glm::mat4 modelMatrix = glm::mat4(1);
         modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 1, 1));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5));
         RenderSimpleMesh(meshes["triangle"], shaders["Triangle"], modelMatrix);
-    }*/
+    }
 }
 
 
