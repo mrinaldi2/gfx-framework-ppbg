@@ -337,8 +337,7 @@ void Lab08::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelM
         // - activate texture location 0
         // - bind the texture1 ID
         // - send theuniform value
-        glActiveTexture(GL_TEXTURE0);
-		texture1->BindToTextureUnit(GL_TEXTURE0);
+        texture1->BindToTextureUnit(GL_TEXTURE0);
         glUniform1i(glGetUniformLocation(shader->program, "texture_1"), 0);
     }
 
@@ -348,7 +347,6 @@ void Lab08::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 &modelM
         // - activate texture location 1
         // - bind the texture2 ID
         // - send the uniform value
-        glActiveTexture(GL_TEXTURE1);
         texture2->BindToTextureUnit(GL_TEXTURE1);
         glUniform1i(glGetUniformLocation(shader->program, "texture_2"), 1);
     }
