@@ -197,6 +197,17 @@ void Lab11::OnKeyPress(int key, int mods)
 void Lab11::OnKeyRelease(int key, int mods)
 {
     // Add key release event
+    if (key == GLFW_KEY_KP_SUBTRACT)
+    {
+        if (no_of_steps > 0) {
+            no_of_steps--;
+        }
+    }
+
+    if (key == GLFW_KEY_KP_ADD)
+    {
+        no_of_steps++;
+    }
 }
 
 

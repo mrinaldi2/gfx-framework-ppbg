@@ -36,8 +36,10 @@ void main()
     // TODO(student): Rather than emitting vertices for the control
     // points, you must emit vertices that approximate the curve itself.
     gl_Position = Projection * View * vec4(control_p0, 1);   EmitVertex();
-    gl_Position = Projection * View * vec4(control_p1, 1);   EmitVertex();
-    gl_Position = Projection * View * vec4(control_p2, 1);   EmitVertex();
+    vec3 bt = pow(0.75f, 3) * control_p0 + 3 * pow(0.75f, 2) * 0.25f * control_p1 + 3 * 0.75f * pow(0.25f, 2) * control_p2 + pow(0.25f, 3) * control_p3;
+    gl_Position = Projection * View * vec4(bt, 1);   EmitVertex();
+    vec3 bt2 = pow(0.25f, 3) * control_p0 + 3 * pow(0.25f, 2) * 0.75f * control_p1 + 3 * 0.25f * pow(0.75f, 2) * control_p2 + pow(0.75f, 3) * control_p3;
+    gl_Position = Projection * View * vec4(bt2, 1);   EmitVertex();
     gl_Position = Projection * View * vec4(control_p3, 1);   EmitVertex();
     EndPrimitive();
 }
