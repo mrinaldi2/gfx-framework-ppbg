@@ -123,6 +123,7 @@ void Lab11::RenderMeshInstanced(Mesh* mesh, Shader* shader, const glm::mat4& mod
     glUniform3f(glGetUniformLocation(shader->program, "control_p2"), control_p2.x, control_p2.y, control_p2.z);
     glUniform3f(glGetUniformLocation(shader->program, "control_p3"), control_p3.x, control_p3.y, control_p3.z);
     glUniform1i(glGetUniformLocation(shader->program, "no_of_instances"), no_of_instances);
+	
 
     // TODO(student): Send to the shaders the number of points that approximate
     // a curve (no_of_generated_points), as well as the characteristics for
@@ -131,6 +132,8 @@ void Lab11::RenderMeshInstanced(Mesh* mesh, Shader* shader, const glm::mat4& mod
     // rendered surface is changed.
     // NOTE: If you're feeling lost and need a frame of reference while doing
     // this lab, go to `FrameEnd()` and activate `DrawCoordinateSystem()`.
+	glUniform1f(glGetUniformLocation(shader->program, "max_translate"), max_translate);
+    glUniform1i(glGetUniformLocation(shader->program, "no_of_generated_points"), no_of_generated_points);
 
     // Draw the object instanced
     glBindVertexArray(mesh->GetBuffers()->m_VAO);
@@ -199,15 +202,28 @@ void Lab11::OnKeyRelease(int key, int mods)
     // Add key release event
     if (key == GLFW_KEY_KP_SUBTRACT)
     {
-        if (no_of_steps > 0) {
-            no_of_steps--;
+        if (no_of_generated_points > 0) {
+            no_of_generated_points--;
         }
     }
 
     if (key == GLFW_KEY_KP_ADD)
     {
-        no_of_steps++;
+        no_of_generated_points++;
     }
+
+	if (key == GLFW_KEY_KP_MULTIPLY)
+	{
+		no_of_instances++;
+	}
+
+	if (key == GLFW_KEY_KP_DIVIDE)
+	{
+		if (no_of_instances > 0)
+		{
+			no_of_instances--;
+		}
+	}
 }
 
 

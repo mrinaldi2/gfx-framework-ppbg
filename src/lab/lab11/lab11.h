@@ -34,6 +34,5 @@ namespace lab
         glm::vec3 control_p0, control_p1, control_p2, control_p3;
         unsigned int no_of_generated_points, no_of_instances, surface_type;
         float max_translate, max_rotate;
-		unsigned int no_of_steps = 4;
     };
 }   // namespace lab
