@@ -13,6 +13,8 @@ uniform vec3 control_p0, control_p1, control_p2, control_p3;
 uniform int no_of_instances;
 uniform int no_of_generated_points;
 uniform float max_translate;
+uniform float max_rotate;
+uniform int surface_type;
 // TODO(student): Declare any other uniforms here
 
 // Input
@@ -39,18 +41,46 @@ void main()
         // Compute the current and next Bézier curve points
         float u = float(i) / float(no_of_generated_points);
         
-        float dist = max_translate / float(no_of_instances);
+        vec3 p0_curr = control_p0;
+        vec3 p1_curr = control_p1;
+        vec3 p2_curr = control_p2;
+        vec3 p3_curr = control_p3;
 
-        vec3 p0_curr = translateX(control_p0, instance[0] * dist);
-        vec3 p1_curr = translateX(control_p1, instance[0] * dist);
-        vec3 p2_curr = translateX(control_p2, instance[0] * dist);
-        vec3 p3_curr = translateX(control_p3, instance[0] * dist);
+        vec3 p0_next = control_p0;
+        vec3 p1_next = control_p1;
+        vec3 p2_next = control_p2;
+        vec3 p3_next = control_p3;
 
-        vec3 p0_next = translateX(control_p0, (instance[0] + 1) * dist);
-        vec3 p1_next = translateX(control_p1, (instance[0] + 1) * dist);
-        vec3 p2_next = translateX(control_p2, (instance[0] + 1) * dist);
-        vec3 p3_next = translateX(control_p3, (instance[0] + 1) * dist);
+        if (surface_type == SURFACE_TYPE_TRANSLATION) {
+
+            float dist = max_translate / float(no_of_instances);
+
+            p0_curr = translateX(control_p0, instance[0] * dist);
+            p1_curr = translateX(control_p1, instance[0] * dist);
+            p2_curr = translateX(control_p2, instance[0] * dist);
+            p3_curr = translateX(control_p3, instance[0] * dist);
+
+            p0_next = translateX(control_p0, (instance[0] + 1) * dist);
+            p1_next = translateX(control_p1, (instance[0] + 1) * dist);
+            p2_next = translateX(control_p2, (instance[0] + 1) * dist);
+            p3_next = translateX(control_p3, (instance[0] + 1) * dist);
             
+        } else if (surface_type == SURFACE_TYPE_ROTATION) {
+            
+            float angle = max_rotate / float(no_of_instances);
+
+			p0_curr = rotateY(control_p0, instance[0] * angle);
+			p1_curr = rotateY(control_p1, instance[0] * angle);
+			p2_curr = rotateY(control_p2, instance[0] * angle);
+			p3_curr = rotateY(control_p3, instance[0] * angle);
+
+			p0_next = rotateY(control_p0, (instance[0] + 1) * angle);
+			p1_next = rotateY(control_p1, (instance[0] + 1) * angle);
+			p2_next = rotateY(control_p2, (instance[0] + 1) * angle);
+			p3_next = rotateY(control_p3, (instance[0] + 1) * angle);
+        
+        }
+
         vec3 point_curr = pow(1 - u, 3) * p0_curr + 
                             3 * pow(1 - u, 2) * u * p1_curr + 
                             3 * (1 - u) * pow(u, 2) * p2_curr + 
