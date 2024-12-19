@@ -29,7 +29,7 @@ const float SPECULAR_EXPONENT = 40.0;   // specular exponent
 
 const float spot_angle = 45.0;
 
-const float G_SCATTERING = -0.3f;
+const float G_SCATTERING = -0.1f;
 
 // Mie scattering approximated with Henyey-Greenstein phase function
 float ComputeScattering(float cosAngle)
@@ -68,14 +68,19 @@ vec3 PhongLight()
 
 bool IsIlluminated(vec3 point_position, float bias)
 {
+    //transform as camera is at light position using view and perspecive matrixes
     vec4 light_space_pos = light_space_projection * light_space_view * vec4 (point_position, 1.0f);
 
+    //perspective division
     light_space_pos = light_space_pos / light_space_pos.w;
 
+    //remappere pentru spatiu depth
     float light_space_depth = light_space_pos.z * 0.5f + 0.5f;
 
+    //remappare in spatiu texture
     vec2 depth_map_pos = light_space_pos.xy * 0.5f + 0.5f;
 
+    //control daca se afla in textura
 	bvec2 a = greaterThan(depth_map_pos, vec2(1.0, 1.0));
 	bvec2 b = lessThan(depth_map_pos, vec2(0.0, 0.0));
 
@@ -122,7 +127,7 @@ float VolumetricIllumination()
 {
     vec3 ray_direction = world_position - eye_position;
 
-    int illuminated_samples_count = 0;
+    float illuminated_samples_count = 0;
     int sample_count = 0;
 
     vec3 point_position = eye_position;
@@ -133,26 +138,23 @@ float VolumetricIllumination()
     // IsIlluminated() and the number of sampled points in total.
     for (int i = 0; i < 100; i++)
 	{
-		point_position += ray_direction * 0.03f;
+		point_position += ray_direction * 0.01f;
 		sample_count++;
-
-		if (IsIlluminated(point_position, 0.0001f))
+        float scattering = ComputeScattering(dot(normalize(ray_direction), normalize(point_position - light_position)));
+		if (IsIlluminated(point_position, 0.0f))
 		{
-			illuminated_samples_count++;
+            illuminated_samples_count += scattering * 0.01f;
 		}
 	}
 
-
-    float scattering = ComputeScattering(dot(normalize(ray_direction), light_direction));
-
-    return scattering * illuminated_samples_count / sample_count * 5;
+    return illuminated_samples_count * 5;
 }
 
 void main()
 {
     vec4 texture_color = texture(texture_1, texture_coord);
 
-    if (texture_color.a < 0.75)
+    if (texture_color.a < 0.5)
     {
         discard;
     }
