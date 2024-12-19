@@ -27,5 +27,15 @@ namespace lab
 		void OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods) override;
 		void OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY) override;
 		void OnWindowResize(int width, int height) override;
+
+		void RenderSimpleMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix);
+		void LoadShader(const std::string& name);
+		void GenerateHeightmapTexture();
+		float PerlinNoise(float x, float z);
+		void CreateTerrain();
+
+	private:
+		const int gridSize = 100;
+		unsigned int terrainNoise;
 	};
 }
