@@ -12,9 +12,13 @@ uniform mat4 Model;
 uniform mat4 View;
 uniform mat4 Projection;
 
+uniform vec3 eye_position;
+
 uniform sampler2D NoiseTexture;
 
-float heightScale = 0.8;
+float heightScale = 3;
+
+out vec2 texture_coords;
 
 void main() {
 
@@ -25,8 +29,14 @@ void main() {
 
     // Adjust vertex position
     vec3 modifiedPos = v_position;
-    modifiedPos.y += height * heightScale;
+    modifiedPos.y = (height * pow(height, 0.8f) * 30.0f) - 2.5f;
+
+    vec4 world_position = Model * vec4(modifiedPos, 1.0);
+    float distance = length(eye_position - world_position.xyz);
+    float curvature = distance * 0.5f;
+    modifiedPos.y = modifiedPos.y - curvature;
 
 	gl_Position = Projection * View * Model * vec4(modifiedPos, 1.0);
+    texture_coords = vec2(normalizedX, normalizedZ);
 
 }
