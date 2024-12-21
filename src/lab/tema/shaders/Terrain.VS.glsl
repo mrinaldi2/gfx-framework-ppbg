@@ -33,7 +33,7 @@ void main() {
 
     vec4 world_position = Model * vec4(modifiedPos, 1.0);
     float distance = length(eye_position - world_position.xyz);
-    float curvature = distance * 0.5f;
+    float curvature = distance * 1.2f;
     modifiedPos.y = modifiedPos.y - curvature;
 
 	gl_Position = Projection * View * Model * vec4(modifiedPos, 1.0);

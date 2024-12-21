@@ -1,4 +1,5 @@
 #include "lab/tema/tema.h"
+#include <stb/stb_image.h>
 
 using namespace std;
 using namespace lab;
@@ -10,14 +11,24 @@ Tema::Tema()
 
 Tema::~Tema()
 {
-
+    delete perlin;
 }
 
 void Tema::Init() 
 {
-
+	perlin = new PerlinNoise();
     helicopterPosition = glm::vec3(0, 5, 0);
     helicopterDirection = glm::vec3(0, 0, 1);
+
+    {
+        Texture2D* texture = LoadTexture("src\\lab\\tema\\textures\\snow.jpg");
+        mapTextures["snow"] = texture;
+    }
+
+    {
+        Texture2D* texture = LoadTexture("src\\lab\\tema\\textures\\ground.jpg");
+        mapTextures["ground"] = texture;
+    }
 
     {
         Mesh* mesh = new Mesh("quad");
@@ -38,6 +49,73 @@ void Tema::Init()
     LoadShader("Terrain");
     LoadShader("ViewColorTexture");
     LoadShader("Default");
+}
+
+Texture2D* Tema::LoadTexture(const char* imagePath)
+{
+    int width, height, channels;
+    unsigned char* imageData = stbi_load(imagePath, &width, &height, &channels, 0);
+
+    return CreateTexture(width, height, channels, imageData);
+}
+
+Texture2D* Tema::CreateTexture(unsigned int width, unsigned int height,
+    unsigned int channels, unsigned char* data)
+{
+    GLuint textureID = 0;
+    unsigned int size = width * height * channels;
+
+    // TODO(student): Generate and bind the new texture ID
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    if (GLEW_EXT_texture_filter_anisotropic) {
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
+    }
+    // TODO(student): Set the texture parameters (MIN_FILTER and MAG_FILTER) using glTexParameteri
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    CheckOpenGLError();
+
+
+    // TODO(student): Use the "glTexImage2D" directive to load the information
+    // into the graphics processor's memory. Use the correct format based on
+    // the number of components:
+    //   - 1 color channel - GL_RED
+    //   - 2 color channels - GL_RG
+    //   - 3 color channels - GL_RGB
+    //   - 4 color channels - GL_RGBA
+    GLuint format = 0;
+    switch (channels)
+    {
+    case 2:
+        format = GL_RG;
+        break;
+    case 3:
+        format = GL_RGB;
+        break;
+    case 4:
+        format = GL_RGBA;
+        break;
+    default:
+        format = GL_RED;
+        break;
+    }
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+
+    // TODO(student): Generate texture mip-maps
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    CheckOpenGLError();
+
+    // Save the texture into a wrapper Texture2D class for using easier later during rendering phase
+    Texture2D* texture = new Texture2D();
+    texture->Init(textureID, width, height, channels);
+
+    SAFE_FREE_ARRAY(data);
+    return texture;
 }
 
 void Tema::LoadShader(const std::string& name)
@@ -100,95 +178,9 @@ void Tema::CreateTerrain()
 }
 
 float Tema::GenerateTerrainHeight(float x, float z) {
-    printf("(x,z): (%f, %f)\n", x, z);
     float baseHeight = 0.0f; // Base elevation
-    float height = OctavePerlinNoise(x, z, 3, 0.5f, 0.01f);
+    float height = perlin->OctaveNoise(x, z, 3, 0.5f, 0.01f);
     return height; // Exaggerate peaks
-}
-
-float Tema::OctavePerlinNoise(float x, float z, int octaves, float persistence, float scale) {
-    float total = 0.0f;
-    float maxAmplitude = 0.0f;
-    float amplitude = 1.0f;
-    float frequency = 1.0f;
-
-    for (int i = 0; i < octaves; ++i) {
-        total += PerlinNoise(x * frequency * scale, z * frequency * scale) * amplitude;
-        maxAmplitude += amplitude;
-        amplitude *= persistence;
-        frequency *= 2.0f;
-    }
-
-    return total / maxAmplitude;
-}
-
-float Tema::PerlinNoise(float x, float z) {
-    std::array<float, 4> Pi = {
-        std::floor(x),
-        std::floor(z),
-        std::floor(x) + 1.0f,
-        std::floor(z) + 1.0f
-    };
-
-    std::array<float, 4> Pf = {
-        x - std::floor(x),
-        z - std::floor(z),
-        x - (std::floor(x) + 1.0f),
-        z - (std::floor(z) + 1.0f)
-    };
-
-    Pi = mod289(Pi);
-
-    std::array<float, 4> ix = { Pi[0], Pi[2], Pi[0], Pi[2] };
-    std::array<float, 4> iy = { Pi[1], Pi[1], Pi[3], Pi[3] };
-    std::array<float, 4> fx = { Pf[0], Pf[2], Pf[0], Pf[2] };
-    std::array<float, 4> fy = { Pf[1], Pf[1], Pf[3], Pf[3] };
-
-    std::array<float, 4> i = permute(addArrays(permute(ix), iy));
-
-    std::array<float, 4> gx = {
-        std::fmod(i[0] * (1.0f / 41.0f), 1.0f) * 2.0f - 1.0f,
-        std::fmod(i[1] * (1.0f / 41.0f), 1.0f) * 2.0f - 1.0f,
-        std::fmod(i[2] * (1.0f / 41.0f), 1.0f) * 2.0f - 1.0f,
-        std::fmod(i[3] * (1.0f / 41.0f), 1.0f) * 2.0f - 1.0f
-    };
-
-    std::array<float, 4> gy = {
-        std::abs(gx[0]) - 0.5f,
-        std::abs(gx[1]) - 0.5f,
-        std::abs(gx[2]) - 0.5f,
-        std::abs(gx[3]) - 0.5f
-    };
-
-    std::array<float, 4> norm = taylorInvSqrt({
-        gx[0] * gx[0] + gy[0] * gy[0],
-        gx[1] * gx[1] + gy[1] * gy[1],
-        gx[2] * gx[2] + gy[2] * gy[2],
-        gx[3] * gx[3] + gy[3] * gy[3]
-        });
-
-    gx = { gx[0] * norm[0], gx[1] * norm[1], gx[2] * norm[2], gx[3] * norm[3] };
-    gy = { gy[0] * norm[0], gy[1] * norm[1], gy[2] * norm[2], gy[3] * norm[3] };
-
-    std::array<float, 2> g00 = { gx[0], gy[0] };
-    std::array<float, 2> g10 = { gx[1], gy[1] };
-    std::array<float, 2> g01 = { gx[2], gy[2] };
-    std::array<float, 2> g11 = { gx[3], gy[3] };
-
-    float n00 = g00[0] * fx[0] + g00[1] * fy[0];
-    float n10 = g10[0] * fx[1] + g10[1] * fy[1];
-    float n01 = g01[0] * fx[2] + g01[1] * fy[2];
-    float n11 = g11[0] * fx[3] + g11[1] * fy[3];
-
-    std::array<float, 2> fade_xy = fade({ Pf[0], Pf[1] });
-    std::array<float, 2> n_x = {
-        n00 + fade_xy[0] * (n10 - n00),
-        n01 + fade_xy[0] * (n11 - n01)
-    };
-
-    float n_xy = n_x[0] + fade_xy[1] * (n_x[1] - n_x[0]);
-    float scaled_n_xy = std::exp(n_xy) - 1.1f; // Exponential scaling
-    return 2.3f * scaled_n_xy;
 }
 
 void Tema::GenerateHeightmapTexture() {
@@ -227,7 +219,7 @@ void Tema::FrameStart()
 
 void Tema::Update(float deltaTimeSeconds) {
     glm::mat4 modelMatrix = glm::mat4(1);
-    RenderSimpleMesh(meshes["Terrain"], shaders["Terrain"], modelMatrix);
+    RenderTerrain(shaders["Terrain"]);
 
     modelMatrix = glm::mat4(1);
     modelMatrix = glm::translate(modelMatrix, helicopterPosition);
@@ -254,14 +246,8 @@ void Tema::FrameEnd()
 
 }
 
-void Tema::RenderSimpleMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix)
+void Tema::SetModelProjectView(Shader* shader, const glm::mat4& modelMatrix)
 {
-    if (!mesh || !shader || !shader->GetProgramID())
-        return;
-
-    // Render an object using the specified shader and the specified position
-    glUseProgram(shader->program);
-
     // Set model matrix uniform
     GLint loc_model_matrix = glGetUniformLocation(shader->program, "Model");
     glUniformMatrix4fv(loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
@@ -276,24 +262,55 @@ void Tema::RenderSimpleMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMa
     int loc_projection_matrix = glGetUniformLocation(shader->program, "Projection");
     glUniformMatrix4fv(loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 
+}
 
-    if (strcmp(mesh->GetMeshID(), "Terrain") == 0) {
+void Tema::RenderTerrain(Shader* shader)
+{
+    if (!shader || !shader->GetProgramID())
+        return;
 
-        glm::vec3 eyePosition = GetSceneCamera()->m_transform->GetWorldPosition();
-        GLint eye_position = glGetUniformLocation(shader->program, "eye_position");
-        glUniform3f(eye_position, helicopterPosition.x, helicopterPosition.y, helicopterPosition.z);
+    // Render an object using the specified shader and the specified position
+    glUseProgram(shader->program);
 
-        int gridSize_loc = glGetUniformLocation(shader->program, "gridSize");
-        int gridSizeHalf_loc = glGetUniformLocation(shader->program, "gridHalfSize");
-        float gridSizeHalf = gridSize / 2;
-        glUniform1f(gridSize_loc, gridSize);
-        glUniform1f(gridSizeHalf_loc, gridSizeHalf);
+    SetModelProjectView(shader, glm::mat4(1));
 
-        int loc_texture_noise = glGetUniformLocation(shader->program, "NoiseTexture");
-        TextureManager::GetTexture("TerrainNoise")->BindToTextureUnit(GL_TEXTURE0);
-        glUniform1i(loc_texture_noise, 0);
-    }
+    glm::vec3 eyePosition = GetSceneCamera()->m_transform->GetWorldPosition();
+    GLint eye_position = glGetUniformLocation(shader->program, "eye_position");
+    glUniform3f(eye_position, helicopterPosition.x, helicopterPosition.y, helicopterPosition.z);
 
+    int gridSize_loc = glGetUniformLocation(shader->program, "gridSize");
+    int gridSizeHalf_loc = glGetUniformLocation(shader->program, "gridHalfSize");
+    float gridSizeHalf = gridSize / 2;
+    glUniform1f(gridSize_loc, gridSize);
+    glUniform1f(gridSizeHalf_loc, gridSizeHalf);
+
+    int loc_texture_noise = glGetUniformLocation(shader->program, "NoiseTexture");
+    TextureManager::GetTexture("TerrainNoise")->BindToTextureUnit(GL_TEXTURE0);
+    glUniform1i(loc_texture_noise, 0);
+
+	int loc_texture_snow = glGetUniformLocation(shader->program, "SnowTexture");
+	mapTextures["snow"]->BindToTextureUnit(GL_TEXTURE1);
+	glUniform1i(loc_texture_snow, 1);
+
+    int loc_texture_ground = glGetUniformLocation(shader->program, "GroundTexture");
+    mapTextures["ground"]->BindToTextureUnit(GL_TEXTURE2);
+    glUniform1i(loc_texture_ground, 2);
+
+	// Draw the object
+
+	meshes["Terrain"]->Render();
+
+}
+
+void Tema::RenderSimpleMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix)
+{
+    if (!mesh || !shader || !shader->GetProgramID())
+        return;
+
+    // Render an object using the specified shader and the specified position
+    glUseProgram(shader->program);
+
+	SetModelProjectView(shader, modelMatrix);
 
     // Draw the object
     mesh->Render();
