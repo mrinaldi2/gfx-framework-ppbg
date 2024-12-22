@@ -223,7 +223,7 @@ void Tema::Update(float deltaTimeSeconds) {
 
     modelMatrix = glm::mat4(1);
     modelMatrix = glm::translate(modelMatrix, helicopterPosition);
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2, 0.2, 0.2));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.32, 0.2, 0.2));
  
     RenderSimpleMesh(meshes["box"], shaders["Default"], modelMatrix);
     // Set view matrix uniform
@@ -347,7 +347,12 @@ void Tema::OnInputUpdate(float deltaTime, int mods)
             helicopterDirection = glm::mat3(glm::rotate(glm::mat4(1), deltaTime, right)) * helicopterDirection;
         }
 
-        GetSceneCamera()->SetPosition(helicopterPosition + helicopterDirection * glm::vec3(0,0,-3));
+		glm::vec3 relativeCameraPosition = glm::vec3(0, 1, 3);
+
+        GetSceneCamera()->SetPositionAndRotation(
+            helicopterPosition + relativeCameraPosition,
+            glm::quatLookAt(-glm::normalize(relativeCameraPosition), glm::vec3(0, 1, 0))
+        );
     }
 }
 
