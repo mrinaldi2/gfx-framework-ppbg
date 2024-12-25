@@ -42,6 +42,7 @@ namespace lab
 		void GenerateHeightmapTexture();
 		void CreateTerrain();
 		void DrawFramebufferTextures();
+		glm::vec3 GenerateRandomVector();
 
 		float GenerateTerrainHeight(float x, float z);
 
@@ -50,11 +51,15 @@ namespace lab
 		const int gridSize = 100;
 		unsigned int terrainNoise;
 		glm::vec3 helicopterPosition;
+		glm::vec3 targetHelicopterPosition;
+		float helicopterCurrentTime = 3.0f;
+		float helicopterTargetTime = 3.0f;
 		glm::vec3 helicopterDirection;
+		glm::vec3 currentPosition;
 		std::unordered_map<std::string, Texture2D*> mapTextures;
 
-		bool draw_coordinates = true;
-		bool draw_terrain_texture = true;
+		bool draw_coordinates = false;
+		bool draw_terrain_texture = false;
 
 		PerlinNoise* perlin;
 	};

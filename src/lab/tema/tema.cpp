@@ -1,5 +1,8 @@
 #include "lab/tema/tema.h"
 #include <stb/stb_image.h>
+#include <glm/gtx/compatibility.hpp> 
+#include <random>
+
 
 using namespace std;
 using namespace lab;
@@ -17,7 +20,8 @@ Tema::~Tema()
 void Tema::Init() 
 {
 	perlin = new PerlinNoise();
-    helicopterPosition = glm::vec3(0, 5, 0);
+    helicopterPosition = glm::vec3(0, 1, 0);
+	targetHelicopterPosition = glm::vec3(0, 1, 0);
     helicopterDirection = glm::vec3(0, 0, 1);
 
     {
@@ -219,15 +223,29 @@ void Tema::FrameStart()
 
 void Tema::Update(float deltaTimeSeconds) {
     glm::mat4 modelMatrix = glm::mat4(1);
-    RenderTerrain(shaders["Terrain"]);
+	if (helicopterCurrentTime <= helicopterTargetTime) {
+		helicopterCurrentTime += deltaTimeSeconds; 
+        float lerpedTime = helicopterCurrentTime / helicopterTargetTime;
+        currentPosition = glm::lerp(helicopterPosition, targetHelicopterPosition, lerpedTime);
+    }
+    else {
+		helicopterPosition = targetHelicopterPosition;
+		currentPosition = helicopterPosition;
+    }
+
+    helicopterDirection = glm::normalize(currentPosition);
 
     modelMatrix = glm::mat4(1);
-    modelMatrix = glm::translate(modelMatrix, helicopterPosition);
+    modelMatrix = glm::translate(modelMatrix, currentPosition);
     modelMatrix = glm::scale(modelMatrix, glm::vec3(0.32, 0.2, 0.2));
+	float angle = atan2(helicopterDirection.x, helicopterDirection.z);
+	modelMatrix = glm::rotate(modelMatrix, angle, glm::vec3(0, 1, 0));
  
     RenderSimpleMesh(meshes["box"], shaders["Default"], modelMatrix);
     // Set view matrix uniform
     glm::mat4 viewMatrix = GetSceneCamera()->GetViewMatrix();
+
+    RenderTerrain(shaders["Terrain"]);
     
     // Set projection matrix uniform
     glm::mat4 projectionMatrix = GetSceneCamera()->GetProjectionMatrix();
@@ -239,6 +257,11 @@ void Tema::Update(float deltaTimeSeconds) {
     if (draw_terrain_texture) {
         DrawFramebufferTextures();
     }
+
+    GetSceneCamera()->SetPositionAndRotation(
+        currentPosition + glm::vec3(0, 1, 3),
+        glm::quatLookAt(-glm::normalize(glm::vec3(0, 1, 3)), glm::vec3(0, 1, 0))
+    );
 }
 
 void Tema::FrameEnd()
@@ -274,9 +297,8 @@ void Tema::RenderTerrain(Shader* shader)
 
     SetModelProjectView(shader, glm::mat4(1));
 
-    glm::vec3 eyePosition = GetSceneCamera()->m_transform->GetWorldPosition();
     GLint eye_position = glGetUniformLocation(shader->program, "eye_position");
-    glUniform3f(eye_position, helicopterPosition.x, helicopterPosition.y, helicopterPosition.z);
+    glUniform3f(eye_position, currentPosition.x, currentPosition.y, currentPosition.z);
 
     int gridSize_loc = glGetUniformLocation(shader->program, "gridSize");
     int gridSizeHalf_loc = glGetUniformLocation(shader->program, "gridHalfSize");
@@ -319,41 +341,20 @@ void Tema::RenderSimpleMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMa
 void Tema::OnInputUpdate(float deltaTime, int mods)
 {
     // Treat continuous update based on input
-    float speed = 2;
+   
+}
 
-    if (!window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT))
-    {
-        glm::vec3 up = glm::vec3(0, 1, 0);
-        glm::vec3 forward = glm::normalize(glm::vec3(helicopterDirection.x, 0, helicopterDirection.z));
-        glm::vec3 right = glm::cross(up, forward);
+glm::vec3 Tema::GenerateRandomVector() {
 
-        // Control light position using on W, A, S, D, E, Q
-        if (window->KeyHold(GLFW_KEY_W)) helicopterPosition += forward * deltaTime * speed;
-        if (window->KeyHold(GLFW_KEY_A)) helicopterPosition += right * deltaTime * speed;
-        if (window->KeyHold(GLFW_KEY_S)) helicopterPosition -= forward * deltaTime * speed;
-        if (window->KeyHold(GLFW_KEY_D)) helicopterPosition -= right * deltaTime * speed;
-        if (window->KeyHold(GLFW_KEY_E)) helicopterPosition += up * deltaTime * speed;
-        if (window->KeyHold(GLFW_KEY_Q)) helicopterPosition -= up * deltaTime * speed;
-        if (window->KeyHold(GLFW_KEY_LEFT)) {
-            helicopterDirection = glm::mat3(glm::rotate(glm::mat4(1), deltaTime, up)) * helicopterDirection;
-        }
-        if (window->KeyHold(GLFW_KEY_RIGHT)) {
-            helicopterDirection = glm::mat3(glm::rotate(glm::mat4(1), -deltaTime, up)) * helicopterDirection;
-        }
-        if (window->KeyHold(GLFW_KEY_UP)) {
-            helicopterDirection = glm::mat3(glm::rotate(glm::mat4(1), -deltaTime, right)) * helicopterDirection;
-        }
-        if (window->KeyHold(GLFW_KEY_DOWN)) {
-            helicopterDirection = glm::mat3(glm::rotate(glm::mat4(1), deltaTime, right)) * helicopterDirection;
-        }
 
-		glm::vec3 relativeCameraPosition = glm::vec3(0, 1, 3);
+    std::random_device rd; // Non-deterministic random seed
+    std::mt19937 gen(rd()); // Mersenne Twister generator
+    std::uniform_real_distribution<float> dist(-5.0f, 5.0f);
 
-        GetSceneCamera()->SetPositionAndRotation(
-            helicopterPosition + relativeCameraPosition,
-            glm::quatLookAt(-glm::normalize(relativeCameraPosition), glm::vec3(0, 1, 0))
-        );
-    }
+    float x = dist(gen);
+    float z = dist(gen);
+    printf("x, y, z: %f, %f, %f\n", x, 1, z);
+    return glm::vec3(x, 1.0f, z);
 }
 
 void Tema::OnKeyPress(int key, int mods)
@@ -365,6 +366,13 @@ void Tema::OnKeyPress(int key, int mods)
 
     if (key == GLFW_KEY_F2) {
         draw_terrain_texture = !draw_terrain_texture;
+    }
+
+    if (key == GLFW_KEY_M) {
+       
+        targetHelicopterPosition = GenerateRandomVector();
+		helicopterCurrentTime = 0.0f;
+       
     }
 }
 
