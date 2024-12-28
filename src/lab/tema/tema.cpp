@@ -1,4 +1,4 @@
-#include "lab/tema/tema.h"
+﻿#include "lab/tema/tema.h"
 #include <stb/stb_image.h>
 #include <glm/gtx/compatibility.hpp> 
 #include <random>
@@ -15,14 +15,16 @@ Tema::Tema()
 Tema::~Tema()
 {
     delete perlin;
+    delete helicopterVector;
 }
 
 void Tema::Init() 
 {
+	helicopterVector = new Vector();
 	perlin = new PerlinNoise();
     helicopterPosition = glm::vec3(0, 1, 0);
 	targetHelicopterPosition = glm::vec3(0, 1, 0);
-    helicopterDirection = glm::vec3(0, 0, 1);
+    helicopterDirection = glm::vec3(0, 0, 0);
 
     {
         Texture2D* texture = LoadTexture("src\\lab\\tema\\textures\\snow.jpg");
@@ -41,18 +43,13 @@ void Tema::Init()
         meshes[mesh->GetMeshID()] = mesh;
     }
 
-    {
-        Mesh* mesh = new Mesh("box");
-        mesh->LoadMesh(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::MODELS, "primitives"), "box.obj");
-        mesh->UseMaterials(false);
-        meshes[mesh->GetMeshID()] = mesh;
-    }
-
+    CreateHelicopter();
     CreateTerrain();
     GenerateHeightmapTexture();
     LoadShader("Terrain");
     LoadShader("ViewColorTexture");
     LoadShader("Default");
+    LoadShader("Vector");
 }
 
 Texture2D* Tema::LoadTexture(const char* imagePath)
@@ -135,6 +132,82 @@ void Tema::LoadShader(const std::string& name)
         shader->CreateAndLink();
         shaders[shader->GetName()] = shader;
     }
+}
+
+void Tema::CreateHelicopter()
+{
+    // Body dimensions
+    float bodyX = 1.3f, bodyY = 0.3f, bodyZ = 0.3f;
+
+    // Tail dimensions
+    float tailX = 1.5f, tailY = 0.2f, tailZ = 0.25f;
+
+    // Body vertices
+    std::vector<glm::vec3> positions = {
+        // Body (larger rectangle)
+        {0.0f,  bodyY,  bodyZ},  // 0
+        {bodyX, bodyY,  bodyZ},  // 1
+        {bodyX, -bodyY, bodyZ},  // 2
+        {0.0f,  -bodyY, bodyZ},  // 3
+        {0.0f,  bodyY,  -bodyZ},   // 4
+        {bodyX, bodyY,  -bodyZ},   // 5
+        {bodyX, -bodyY, -bodyZ},   // 6
+        {0.0f,  -bodyY, -bodyZ},   // 7
+
+        // Tail (smaller rectangle)
+        {0.0f,  tailY, tailZ},  // 8
+        {-tailX, tailY, tailZ},  // 9
+        {-tailX, -tailY, tailZ}, // 10
+        {0.0f,  -tailY, tailZ}, // 11
+        {0.0f,  tailY,  -tailZ},   // 12
+        {-tailX, tailY,  -tailZ},   // 13
+        {-tailX, -tailY, -tailZ},   // 14
+        {0.0f,  -tailY, -tailZ}    // 15
+    };
+
+    // Normals (one normal per face, repeated for each vertex)
+    std::vector<glm::vec3> normals = {
+        // Body normals
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, // Front face
+        {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, // Back face
+        {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, // Top face
+        {0.0f, -1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, // Bottom face
+        {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, // Right face
+        {-1.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, // Left face
+
+        // Tail normals
+        {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, // Front face
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, // Back face
+        {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, // Top face
+        {0.0f, -1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, // Bottom face
+        {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, // Right face
+        {-1.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}  // Left face
+    };
+
+    // Indices for the body and tail rectangles
+    std::vector<unsigned int> indices = {
+        // Body rectangle (two triangles per face)
+        0, 1, 2, 0, 2, 3,  // Front face
+        4, 5, 6, 4, 6, 7,  // Back face
+        0, 1, 5, 0, 5, 4,  // Top face
+        3, 2, 6, 3, 6, 7,  // Bottom face
+        1, 2, 6, 1, 6, 5,  // Right face
+        0, 3, 7, 0, 7, 4,  // Left face
+
+        // Tail rectangle
+        8, 9, 10, 8, 10, 11, // Front face
+        12, 13, 14, 12, 14, 15, // Back face
+        8, 9, 13, 8, 13, 12, // Top face
+        11, 10, 14, 11, 14, 15, // Bottom face
+        9, 10, 14, 9, 14, 13, // Right face
+        8, 11, 15, 8, 15, 12  // Left face
+    };
+
+    // Initialize the mesh
+    Mesh* mesh = new Mesh("Helicopter");
+    mesh->InitFromData(positions, normals, indices);
+    mesh->UseMaterials(false);
+    meshes[mesh->GetMeshID()] = mesh;
 }
 
 void Tema::CreateTerrain() 
@@ -226,22 +299,21 @@ void Tema::Update(float deltaTimeSeconds) {
 	if (helicopterCurrentTime <= helicopterTargetTime) {
 		helicopterCurrentTime += deltaTimeSeconds; 
         float lerpedTime = helicopterCurrentTime / helicopterTargetTime;
-        currentPosition = glm::lerp(helicopterPosition, targetHelicopterPosition, lerpedTime);
+        currentPosition = helicopterPosition;
+        //currentPosition = glm::lerp(helicopterPosition, targetHelicopterPosition, lerpedTime);
     }
     else {
-		helicopterPosition = targetHelicopterPosition;
+		//helicopterPosition = targetHelicopterPosition;
 		currentPosition = helicopterPosition;
     }
 
-    helicopterDirection = glm::normalize(currentPosition);
-
     modelMatrix = glm::mat4(1);
     modelMatrix = glm::translate(modelMatrix, currentPosition);
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.32, 0.2, 0.2));
-	float angle = atan2(helicopterDirection.x, helicopterDirection.z);
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2, 0.2, 0.2));
+    float angle = MapAtan2To360(helicopterDirection.z, helicopterDirection.x);
 	modelMatrix = glm::rotate(modelMatrix, angle, glm::vec3(0, 1, 0));
  
-    RenderSimpleMesh(meshes["box"], shaders["Default"], modelMatrix);
+    RenderSimpleMesh(meshes["Helicopter"], shaders["Default"], modelMatrix);
     // Set view matrix uniform
     glm::mat4 viewMatrix = GetSceneCamera()->GetViewMatrix();
 
@@ -258,10 +330,27 @@ void Tema::Update(float deltaTimeSeconds) {
         DrawFramebufferTextures();
     }
 
-    GetSceneCamera()->SetPositionAndRotation(
-        currentPosition + glm::vec3(0, 1, 3),
-        glm::quatLookAt(-glm::normalize(glm::vec3(0, 1, 3)), glm::vec3(0, 1, 0))
-    );
+	glUseProgram(shaders["Vector"]->program);
+    SetModelProjectView(shaders["Vector"], glm::mat4(1));
+	helicopterVector->Draw();
+
+    if(!window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT)) {
+
+        auto camera = GetSceneCamera();
+        camera->SetPositionAndRotation(
+            currentPosition + glm::vec3(2, 1, 0),
+            glm::quatLookAt(-glm::normalize(glm::vec3(2, 1, 0)), glm::vec3(0, 1, 0))
+        );
+		camera->Update();
+    }
+}
+
+double Tema::MapAtan2To360(double y, double x) {
+    double angle = atan2(y, x);
+    if (angle < 0) {
+        angle += 2 * M_PI; // M_PI is the constant for π
+    }
+    return M_PI * 2 - angle; // Angle in radians
 }
 
 void Tema::FrameEnd()
@@ -346,14 +435,12 @@ void Tema::OnInputUpdate(float deltaTime, int mods)
 
 glm::vec3 Tema::GenerateRandomVector() {
 
-
     std::random_device rd; // Non-deterministic random seed
     std::mt19937 gen(rd()); // Mersenne Twister generator
     std::uniform_real_distribution<float> dist(-5.0f, 5.0f);
 
     float x = dist(gen);
     float z = dist(gen);
-    printf("x, y, z: %f, %f, %f\n", x, 1, z);
     return glm::vec3(x, 1.0f, z);
 }
 
@@ -371,8 +458,16 @@ void Tema::OnKeyPress(int key, int mods)
     if (key == GLFW_KEY_M) {
        
         targetHelicopterPosition = GenerateRandomVector();
+		helicopterVector->SetEnd(targetHelicopterPosition);
+		helicopterVector->SetStart(helicopterPosition);
 		helicopterCurrentTime = 0.0f;
-       
+
+		helicopterDirection = glm::normalize(targetHelicopterPosition);
+		printf("Helicopter direction: %f %f %f\n", helicopterDirection.x, helicopterDirection.y, helicopterDirection.z);
+        float angle = MapAtan2To360(helicopterDirection.z, helicopterDirection.x);
+        printf("Angle: %f\n", angle);
+        printf("Angle: %f\n", glm::degrees(angle));
+
     }
 }
 

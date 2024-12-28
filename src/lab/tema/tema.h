@@ -5,6 +5,11 @@
 #include "components/simple_scene.h"
 #include "components/transform.h"
 #include "lab/tema/perlin.h"
+#include "lab/tema/vector.h"
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 namespace lab
 {
@@ -43,9 +48,9 @@ namespace lab
 		void CreateTerrain();
 		void DrawFramebufferTextures();
 		glm::vec3 GenerateRandomVector();
-
+		void CreateHelicopter();
 		float GenerateTerrainHeight(float x, float z);
-
+		double MapAtan2To360(double y, double x);
 
 	private:
 		const int gridSize = 100;
@@ -60,6 +65,7 @@ namespace lab
 
 		bool draw_coordinates = false;
 		bool draw_terrain_texture = false;
+		Vector* helicopterVector;
 
 		PerlinNoise* perlin;
 	};
