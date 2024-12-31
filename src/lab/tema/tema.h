@@ -38,7 +38,6 @@ namespace lab
 
 		void RenderTerrain(Shader* shader);
 		void SetModelProjectView(Shader* shader, const glm::mat4& modelMatrix);
-		void RenderSimpleMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix);
 		void RenderTextureScreen(Shader* shader, unsigned int textureID);
 		void LoadShader(const std::string& name);
 		Texture2D* LoadTexture(const char* imagePath);
@@ -46,6 +45,7 @@ namespace lab
 			unsigned int channels, unsigned char* data);
 		void GenerateHeightmapTexture();
 		void CreateTerrain();
+		void RenderHelicopter(float deltaTimeSeconds);
 		void DrawFramebufferTextures();
 		glm::vec3 GenerateRandomVector();
 		void CreateHelicopter();
@@ -59,6 +59,9 @@ namespace lab
 		glm::vec3 targetHelicopterPosition;
 		float helicopterCurrentTime = 3.0f;
 		float helicopterTargetTime = 3.0f;
+		float propellerAngle = 0.0f;
+		float propellerAngle2 = 1.5708f;
+		float propellerSpeed = 2.0f;
 		glm::vec3 helicopterDirection;
 		glm::vec3 currentPosition;
 		std::unordered_map<std::string, Texture2D*> mapTextures;

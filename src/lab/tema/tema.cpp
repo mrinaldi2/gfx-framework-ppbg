@@ -208,6 +208,50 @@ void Tema::CreateHelicopter()
     mesh->InitFromData(positions, normals, indices);
     mesh->UseMaterials(false);
     meshes[mesh->GetMeshID()] = mesh;
+
+    float propellerX = 1.0f, propellerY = 0.02f, propellerZ = 0.1f;
+
+    std::vector<glm::vec3> propellerPositions = {
+        // Body (larger rectangle)
+        {-propellerX,  propellerY,  propellerZ},  // 0
+        {propellerX, propellerY,  propellerZ},  // 1
+        {propellerX, -propellerY, propellerZ},  // 2
+        {-propellerX,  -propellerY, propellerZ},  // 3
+        {-propellerX,  propellerY,  -propellerZ},  // 4
+        {propellerX, propellerY,  -propellerZ},  // 5
+        {propellerX, -propellerY, -propellerZ},  // 6
+        {-propellerX,  -propellerY, -propellerZ},  // 7
+    
+    };
+
+    // Normals (one normal per face, repeated for each vertex)
+    std::vector<glm::vec3> propellerNormals = {
+        // Body normals
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, // Front face
+        {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f, -1.0f}, // Back face
+        {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, // Top face
+        {0.0f, -1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, // Bottom face
+        {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, // Right face
+        {-1.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, // Left face
+
+    };
+
+    // Indices for the body and tail rectangles
+    std::vector<unsigned int> propellerIndices = {
+       
+        0, 1, 2, 0, 2, 3,  // Front face
+        4, 5, 6, 4, 6, 7,  // Back face
+        0, 1, 5, 0, 5, 4,  // Top face
+        3, 2, 6, 3, 6, 7,  // Bottom face
+        1, 2, 6, 1, 6, 5,  // Right face
+        0, 3, 7, 0, 7, 4,  // Left face
+    };
+
+    // Initialize the mesh
+    Mesh* propeller = new Mesh("Propeller");
+    propeller->InitFromData(propellerPositions, propellerNormals, propellerIndices);
+    propeller->UseMaterials(false);
+    meshes[propeller->GetMeshID()] = propeller;
 }
 
 void Tema::CreateTerrain() 
@@ -295,36 +339,10 @@ void Tema::FrameStart()
 }
 
 void Tema::Update(float deltaTimeSeconds) {
-    glm::mat4 modelMatrix = glm::mat4(1);
-	if (helicopterCurrentTime <= helicopterTargetTime) {
-		helicopterCurrentTime += deltaTimeSeconds; 
-        float lerpedTime = helicopterCurrentTime / helicopterTargetTime;
-        currentPosition = helicopterPosition;
-        //currentPosition = glm::lerp(helicopterPosition, targetHelicopterPosition, lerpedTime);
-    }
-    else {
-		//helicopterPosition = targetHelicopterPosition;
-		currentPosition = helicopterPosition;
-    }
-
-    modelMatrix = glm::mat4(1);
-    modelMatrix = glm::translate(modelMatrix, currentPosition);
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2, 0.2, 0.2));
-    float angle = MapAtan2To360(helicopterDirection.z, helicopterDirection.x);
-	modelMatrix = glm::rotate(modelMatrix, angle, glm::vec3(0, 1, 0));
- 
-    RenderSimpleMesh(meshes["Helicopter"], shaders["Default"], modelMatrix);
-    // Set view matrix uniform
-    glm::mat4 viewMatrix = GetSceneCamera()->GetViewMatrix();
+    
+    RenderHelicopter(deltaTimeSeconds);
 
     RenderTerrain(shaders["Terrain"]);
-    
-    // Set projection matrix uniform
-    glm::mat4 projectionMatrix = GetSceneCamera()->GetProjectionMatrix();
-
-    if (draw_coordinates) {
-        DrawCoordinateSystem(viewMatrix, projectionMatrix);
-    }
     
     if (draw_terrain_texture) {
         DrawFramebufferTextures();
@@ -338,10 +356,16 @@ void Tema::Update(float deltaTimeSeconds) {
 
         auto camera = GetSceneCamera();
         camera->SetPositionAndRotation(
-            currentPosition + glm::vec3(2, 1, 0),
-            glm::quatLookAt(-glm::normalize(glm::vec3(2, 1, 0)), glm::vec3(0, 1, 0))
+            currentPosition + glm::vec3(0, 1, 2),
+            glm::quatLookAt(-glm::normalize(glm::vec3(0, 1, 0)), glm::vec3(0, 1, 0))
         );
 		camera->Update();
+    }
+
+    if (draw_coordinates) {
+        glm::mat4 viewMatrix = GetSceneCamera()->GetViewMatrix();
+        glm::mat4 projectionMatrix = GetSceneCamera()->GetProjectionMatrix();
+        DrawCoordinateSystem(viewMatrix, projectionMatrix);
     }
 }
 
@@ -413,18 +437,50 @@ void Tema::RenderTerrain(Shader* shader)
 
 }
 
-void Tema::RenderSimpleMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix)
-{
-    if (!mesh || !shader || !shader->GetProgramID())
-        return;
+void Tema::RenderHelicopter(float deltaTimeSeconds) {
+    if (helicopterCurrentTime <= helicopterTargetTime) {
+        helicopterCurrentTime += deltaTimeSeconds;
+        float lerpedTime = helicopterCurrentTime / helicopterTargetTime;
+        //currentPosition = helicopterPosition;
+        currentPosition = glm::lerp(helicopterPosition, targetHelicopterPosition, lerpedTime);
+    }
+    else {
+        helicopterPosition = targetHelicopterPosition;
+        currentPosition = helicopterPosition;
+    }
 
+    glm::mat4 modelMatrix = glm::mat4(1);
+    modelMatrix = glm::translate(modelMatrix, currentPosition);
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.2, 0.2, 0.2));
+    float angle = MapAtan2To360(helicopterDirection.z, helicopterDirection.x);
+    glm::mat4 helicopterMatrix = glm::rotate(modelMatrix, angle, glm::vec3(0, 1, 0));
+
+    auto shader = shaders["Default"];
     // Render an object using the specified shader and the specified position
     glUseProgram(shader->program);
-
-	SetModelProjectView(shader, modelMatrix);
+	int fill_color_loc = glGetUniformLocation(shader->program, "fill_color");
+	glUniform3f(fill_color_loc, 0.0f, 1.0f, 0.0f);
+    SetModelProjectView(shader, helicopterMatrix);
 
     // Draw the object
-    mesh->Render();
+    meshes["Helicopter"]->Render();
+
+  
+    glUniform3f(fill_color_loc, 1.0f, 1.0f, 0.0f);
+	glm::mat4 propellerMatrix = glm::translate(helicopterMatrix, glm::vec3(0.65f, 0.33f, 0.0f));
+	propellerAngle += propellerSpeed * deltaTimeSeconds;
+    propellerMatrix = glm::rotate(propellerMatrix, propellerAngle, glm::vec3(0, 1, 0));
+    SetModelProjectView(shader, propellerMatrix);
+    // Draw the object
+    meshes["Propeller"]->Render();
+
+    glm::mat4 propellerMatrix2 = glm::translate(helicopterMatrix, glm::vec3(0.65f, 0.33f, 0.0f));
+    propellerAngle2 += propellerSpeed * deltaTimeSeconds;
+    propellerMatrix2 = glm::rotate(propellerMatrix2, propellerAngle2, glm::vec3(0, 1, 0));
+    SetModelProjectView(shader, propellerMatrix2);
+    // Draw the object
+    meshes["Propeller"]->Render();
+
 }
 
 void Tema::OnInputUpdate(float deltaTime, int mods)
@@ -462,7 +518,7 @@ void Tema::OnKeyPress(int key, int mods)
 		helicopterVector->SetStart(helicopterPosition);
 		helicopterCurrentTime = 0.0f;
 
-		helicopterDirection = glm::normalize(targetHelicopterPosition);
+		helicopterDirection = glm::normalize(targetHelicopterPosition - helicopterPosition);
 		printf("Helicopter direction: %f %f %f\n", helicopterDirection.x, helicopterDirection.y, helicopterDirection.z);
         float angle = MapAtan2To360(helicopterDirection.z, helicopterDirection.x);
         printf("Angle: %f\n", angle);
