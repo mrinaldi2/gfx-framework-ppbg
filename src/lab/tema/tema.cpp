@@ -137,10 +137,10 @@ void Tema::LoadShader(const std::string& name)
 void Tema::CreateHelicopter()
 {
     // Body dimensions
-    float bodyX = 1.3f, bodyY = 0.3f, bodyZ = 0.3f;
+    float bodyX = 1.2f, bodyY = 0.2f, bodyZ = 0.2f;
 
     // Tail dimensions
-    float tailX = 1.5f, tailY = 0.2f, tailZ = 0.25f;
+    float tailX = 1.0f, tailY = 0.15f, tailZ = 0.15f;
 
     // Body vertices
     std::vector<glm::vec3> positions = {
@@ -357,7 +357,7 @@ void Tema::Update(float deltaTimeSeconds) {
         auto camera = GetSceneCamera();
         camera->SetPositionAndRotation(
             currentPosition + glm::vec3(0, 1, 2),
-            glm::quatLookAt(-glm::normalize(glm::vec3(0, 1, 0)), glm::vec3(0, 1, 0))
+            glm::quatLookAt(-glm::normalize(glm::vec3(0, 1, 2)), glm::vec3(0, 1, 0))
         );
 		camera->Update();
     }
@@ -467,18 +467,30 @@ void Tema::RenderHelicopter(float deltaTimeSeconds) {
 
   
     glUniform3f(fill_color_loc, 1.0f, 1.0f, 0.0f);
-	glm::mat4 propellerMatrix = glm::translate(helicopterMatrix, glm::vec3(0.65f, 0.33f, 0.0f));
+	glm::mat4 propellerMatrix = glm::translate(helicopterMatrix, glm::vec3(0.65f, 0.22f, 0.0f));
 	propellerAngle += propellerSpeed * deltaTimeSeconds;
-    propellerMatrix = glm::rotate(propellerMatrix, propellerAngle, glm::vec3(0, 1, 0));
+    propellerMatrix = glm::rotate(propellerMatrix, -propellerAngle, glm::vec3(0, 1, 0));
     SetModelProjectView(shader, propellerMatrix);
-    // Draw the object
     meshes["Propeller"]->Render();
 
-    glm::mat4 propellerMatrix2 = glm::translate(helicopterMatrix, glm::vec3(0.65f, 0.33f, 0.0f));
+    glm::mat4 propellerMatrix2 = glm::translate(helicopterMatrix, glm::vec3(0.65f, 0.22f, 0.0f));
     propellerAngle2 += propellerSpeed * deltaTimeSeconds;
-    propellerMatrix2 = glm::rotate(propellerMatrix2, propellerAngle2, glm::vec3(0, 1, 0));
+    propellerMatrix2 = glm::rotate(propellerMatrix2, -propellerAngle2, glm::vec3(0, 1, 0));
     SetModelProjectView(shader, propellerMatrix2);
-    // Draw the object
+    meshes["Propeller"]->Render();
+
+    glm::mat4 propellerMatrix3 = glm::translate(helicopterMatrix, glm::vec3(-0.9f, 0.0f, 0.20f));
+    propellerMatrix3 = glm::scale(propellerMatrix3, glm::vec3(0.4f, 0.4f, 0.4f));
+    propellerMatrix3 = glm::rotate(propellerMatrix3, -1.5708f, glm::vec3(1, 0, 0));
+    propellerMatrix3 = glm::rotate(propellerMatrix3, propellerAngle, glm::vec3(0, 1, 0));
+    SetModelProjectView(shader, propellerMatrix3);
+    meshes["Propeller"]->Render();
+
+    glm::mat4 propellerMatrix4 = glm::translate(helicopterMatrix, glm::vec3(-0.9f, 0.0f, 0.20f));
+    propellerMatrix4 = glm::scale(propellerMatrix4, glm::vec3(0.4f, 0.4f, 0.4f));
+    propellerMatrix4 = glm::rotate(propellerMatrix4, -1.5708f, glm::vec3(1, 0, 0));
+    propellerMatrix4 = glm::rotate(propellerMatrix4, propellerAngle2, glm::vec3(0, 1, 0));
+    SetModelProjectView(shader, propellerMatrix4);
     meshes["Propeller"]->Render();
 
 }
